@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Star, ShoppingCart } from 'lucide-react';
+import { Star, ShoppingCart, Package } from 'lucide-react';
 import { Product } from '@/lib/api';
 
 interface ProductCardProps {
@@ -14,7 +14,7 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails }: Pro
   const variant = product.variants[0];
   const price = variant?.price || 0;
   const mrp = variant?.attributes?.mrp || price;
-  const emoji = variant?.attributes?.emoji || '📦';
+  const imageUrl = product.images?.[0] || variant?.image || null;
   const discount = mrp > price ? Math.round((1 - price / mrp) * 100) : 0;
 
   // Find badge (excluding olinbuy tag)
@@ -36,10 +36,18 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails }: Pro
         className="cursor-pointer flex-1 flex flex-col"
       >
         {/* Product Image Box */}
-        <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden border-b border-slate-100">
-          <span className="text-6xl md:text-7xl transition-transform duration-300 group-hover:scale-110 select-none">
-            {emoji}
-          </span>
+        <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden border-b border-slate-100 w-full">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center w-full h-full text-slate-300 select-none">
+              <Package className="w-12 h-12 stroke-[1.5]" />
+            </div>
+          )}
 
           {/* Dynamic Badge */}
           {badge && (

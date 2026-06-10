@@ -5,7 +5,7 @@ import { useCart } from '@/lib/CartContext';
 // Force recompile to refresh Turbopack cache
 import { checkout, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CreditCard, Gift, Loader2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Gift, Loader2, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -478,11 +478,19 @@ export default function CheckoutPage() {
                   <p className="text-xs text-slate-400 py-6 text-center select-none">No items in cart</p>
                 ) : (
                   cartItems.map((item) => {
-                    const emoji = item.product.variants[0]?.attributes?.emoji || '📦';
+                    const imageUrl = item.product.images?.[0] || item.product.variants[0]?.image || null;
                     return (
                       <div key={item.variantId} className="flex gap-3 py-3 items-center">
-                        <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-xl select-none flex-shrink-0">
-                          {emoji}
+                        <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center select-none flex-shrink-0 overflow-hidden">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Package className="w-5 h-5 text-slate-300 stroke-[1.5]" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-[11px] font-bold text-slate-800 truncate select-none">

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, Package } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useRouter } from 'next/navigation';
 
@@ -55,12 +55,20 @@ export default function CartDrawer() {
               </div>
             ) : (
               cartItems.map((item) => {
-                const emoji = item.product.variants[0]?.attributes?.emoji || '📦';
+                const imageUrl = item.product.images?.[0] || item.product.variants[0]?.image || null;
                 return (
                   <div key={item.variantId} className="flex gap-4 py-4 border-b border-slate-100 last:border-0 items-center">
-                    {/* Thumbnail Emoji */}
-                    <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-3xl select-none flex-shrink-0">
-                      {emoji}
+                    {/* Thumbnail Image */}
+                    <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center select-none flex-shrink-0 overflow-hidden">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="w-6 h-6 text-slate-300 stroke-[1.5]" />
+                      )}
                     </div>
 
                     {/* Detail Info */}

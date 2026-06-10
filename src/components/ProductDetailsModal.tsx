@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { X, Star, ShoppingCart, Image as ImageIcon, CheckCircle, Loader2, Sparkles } from 'lucide-react';
+import { X, Star, ShoppingCart, Image as ImageIcon, CheckCircle, Loader2, Sparkles, Package } from 'lucide-react';
 import {
   Product,
   Review,
@@ -69,7 +69,7 @@ export default function ProductDetailsModal({
   const variant = product.variants[0];
   const price = variant?.price || 0;
   const mrp = variant?.attributes?.mrp || price;
-  const emoji = variant?.attributes?.emoji || '📦';
+  const imageUrl = product.images?.[0] || variant?.image || null;
   const discount = mrp > price ? Math.round((1 - price / mrp) * 100) : 0;
 
   // Calculate review aggregation locally
@@ -172,8 +172,18 @@ export default function ProductDetailsModal({
 
         {/* Product Side */}
         <div className="md:w-1/2 p-6 md:p-8 flex flex-col bg-gradient-to-b from-slate-50 to-white md:border-r border-slate-100">
-          <div className="aspect-square bg-white rounded-2xl flex items-center justify-center border border-slate-200/60 shadow-inner relative mb-6">
-            <span className="text-9xl select-none select-none">{emoji}</span>
+          <div className="aspect-square bg-white rounded-2xl flex items-center justify-center border border-slate-200/60 shadow-inner relative mb-6 overflow-hidden">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full h-full text-slate-300 select-none">
+                <Package className="w-24 h-24 stroke-[1.5]" />
+              </div>
+            )}
             {discount > 0 && (
               <span className="absolute top-4 left-4 bg-red-500 text-white font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 Save {discount}%
