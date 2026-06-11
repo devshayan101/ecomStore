@@ -15,7 +15,7 @@ interface ProductDetailsModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product, selectedVariantId?: string) => void;
 }
 
 export default function ProductDetailsModal({
@@ -29,6 +29,8 @@ export default function ProductDetailsModal({
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   // Review Form State
   const [rating, setRating] = useState(5);
@@ -44,6 +46,11 @@ export default function ProductDetailsModal({
   // Load reviews when product opens
   useEffect(() => {
     if (!product || !isOpen) return;
+
+    // Initialize variant and image selection
+    const initialVariant = product.variants?.[0] || null;
+    setSelectedVariant(initialVariant);
+    setActiveImage(product.images?.[0] || initialVariant?.image || null);
 
     setLoadingReviews(true);
     setSubmitSuccess(false);
@@ -66,11 +73,15 @@ export default function ProductDetailsModal({
 
   if (!isOpen || !product) return null;
 
-  const variant = product.variants[0];
-  const price = variant?.price || 0;
-  const mrp = variant?.attributes?.mrp || price;
-  const imageUrl = product.images?.[0] || variant?.image || null;
+  const resolvedVariant = selectedVariant || product.variants[0];
+  const price = resolvedVariant?.price || 0;
+  const mrp = resolvedVariant?.attributes?.mrp || price;
   const discount = mrp > price ? Math.round((1 - price / mrp) * 100) : 0;
+
+  // Gather unique images
+  const productImages = product.images || [];
+  const variantImages = product.variants.map((v) => v.image).filter(Boolean) as string[];
+  const allImages = Array.from(new Set([...productImages, ...variantImages]));
 
   // Calculate review aggregation locally
   const totalReviews = reviews.length;
@@ -142,7 +153,7 @@ export default function ProductDetailsModal({
       if (newReview.status === 'approved') {
         setReviews((prev) => [newReview, ...prev]);
       }
-      
+
       // Reset form
       setTitle('');
       setComment('');
@@ -161,7 +172,7 @@ export default function ProductDetailsModal({
 
       {/* Modal Container */}
       <div className="relative bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row border border-slate-100 animate-[fadeIn_0.2s_ease-out]">
-        
+
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -172,10 +183,10 @@ export default function ProductDetailsModal({
 
         {/* Product Side */}
         <div className="md:w-1/2 p-6 md:p-8 flex flex-col bg-gradient-to-b from-slate-50 to-white md:border-r border-slate-100">
-          <div className="aspect-square bg-white rounded-2xl flex items-center justify-center border border-slate-200/60 shadow-inner relative mb-6 overflow-hidden">
-            {imageUrl ? (
+          <div className="aspect-square bg-white rounded-2xl flex items-center justify-center border border-slate-200/60 shadow-inner relative mb-4 overflow-hidden">
+            {activeImage ? (
               <img
-                src={imageUrl}
+                src={activeImage}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -190,6 +201,23 @@ export default function ProductDetailsModal({
               </span>
             )}
           </div>
+
+          {/* Image Thumbnails Gallery */}
+          {allImages.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 select-none">
+              {allImages.map((img, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveImage(img)}
+                  className={`w-14 h-14 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${activeImage === img ? 'border-blue-600 scale-95 shadow-sm' : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                >
+                  <img src={img} alt={`${product.name} thumbnail ${i}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="space-y-4">
             <div>
@@ -221,7 +249,46 @@ export default function ProductDetailsModal({
                   ₹{mrp.toLocaleString('en-IN')}
                 </span>
               )}
+              {resolvedVariant?.sku && (
+                <span className="text-[10px] text-slate-400 font-bold uppercase ml-auto self-center select-none">
+                  SKU: {resolvedVariant.sku}
+                </span>
+              )}
             </div>
+
+            {/* Variant Selector */}
+            {product.variants.length > 1 && (
+              <div className="space-y-2 select-none border-t border-slate-100 pt-3">
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Select Option / Variant</span>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((v) => {
+                    const isSelected = resolvedVariant?._id === v._id;
+                    const attrLabel = Object.entries(v.attributes || {})
+                      .filter(([key]) => key !== 'mrp')
+                      .map(([key, val]) => `${key}: ${val}`)
+                      .join(', ') || `SKU: ${v.sku}`;
+
+                    return (
+                      <button
+                        key={v._id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVariant(v);
+                          setActiveImage(v.image || product.images?.[0] || null);
+                        }}
+                        className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all text-left flex flex-col justify-between cursor-pointer ${isSelected
+                            ? 'border-blue-600 bg-blue-50 text-blue-800 shadow-sm'
+                            : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white'
+                          }`}
+                      >
+                        <span>{attrLabel}</span>
+                        <span className="text-[10px] font-semibold text-slate-400 mt-1">₹{v.price.toLocaleString('en-IN')}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="text-xs text-slate-500 leading-relaxed space-y-2">
               <p className="font-extrabold text-slate-700 uppercase tracking-widest text-[9px]">Description</p>
@@ -230,7 +297,7 @@ export default function ProductDetailsModal({
 
             <button
               onClick={() => {
-                onAddToCart(product);
+                onAddToCart(product, resolvedVariant?._id);
                 onClose();
               }}
               className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white py-3.5 rounded-xl text-sm font-bold tracking-wider transition-all duration-200 shadow-md cursor-pointer active:scale-[0.98] select-none"
@@ -257,9 +324,8 @@ export default function ProductDetailsModal({
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-3.5 h-3.5 ${
-                        i < Math.round(avgRating) ? 'fill-current' : 'text-slate-200'
-                      }`}
+                      className={`w-3.5 h-3.5 ${i < Math.round(avgRating) ? 'fill-current' : 'text-slate-200'
+                        }`}
                     />
                   ))}
                 </div>
@@ -338,9 +404,8 @@ export default function ProductDetailsModal({
                           className="p-0.5 cursor-pointer text-slate-300 hover:scale-110 transition-transform"
                         >
                           <Star
-                            className={`w-6 h-6 ${
-                              active ? 'fill-amber-400 text-amber-400' : 'text-slate-300'
-                            }`}
+                            className={`w-6 h-6 ${active ? 'fill-amber-400 text-amber-400' : 'text-slate-300'
+                              }`}
                           />
                         </button>
                       );
@@ -441,9 +506,8 @@ export default function ProductDetailsModal({
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-3 h-3 ${
-                              i < rev.rating ? 'fill-current' : 'text-slate-200'
-                            }`}
+                            className={`w-3 h-3 ${i < rev.rating ? 'fill-current' : 'text-slate-200'
+                              }`}
                           />
                         ))}
                       </div>

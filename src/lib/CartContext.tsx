@@ -13,7 +13,7 @@ export interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, selectedVariantId?: string) => void;
   removeFromCart: (variantId: string) => void;
   updateQuantity: (variantId: string, delta: number) => void;
   clearCart: () => void;
@@ -50,8 +50,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cartItems, isLoaded]);
 
-  const addToCart = (product: Product, quantity = 1) => {
-    const mainVariant = product.variants[0];
+  const addToCart = (product: Product, quantity = 1, selectedVariantId?: string) => {
+    const mainVariant = selectedVariantId
+      ? product.variants.find((v) => v._id === selectedVariantId) ?? product.variants[0]
+      : product.variants[0];
     if (!mainVariant) return;
 
     setCartItems((prevItems) => {

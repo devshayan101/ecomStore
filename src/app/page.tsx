@@ -337,7 +337,7 @@ export default function Home() {
         product={selectedProduct}
         isOpen={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
-        onAddToCart={addToCart}
+        onAddToCart={(prod, varId) => addToCart(prod, 1, varId)}
       />
 
       {/* Mobile Navigation Drawer Overlay */}
