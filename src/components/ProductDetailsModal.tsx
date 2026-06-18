@@ -263,7 +263,7 @@ export default function ProductDetailsModal({
                 <div className="flex flex-wrap gap-2">
                   {product.variants.map((v) => {
                     const isSelected = resolvedVariant?._id === v._id;
-                    const attrLabel = Object.entries(v.attributes || {})
+                    const attrLabel = v.attributes?.variant_name || v.attributes?.variant || Object.entries(v.attributes || {})
                       .filter(([key]) => key !== 'mrp')
                       .map(([key, val]) => `${key}: ${val}`)
                       .join(', ') || `SKU: ${v.sku}`;
