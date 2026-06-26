@@ -20,7 +20,7 @@ export default function PromotionGrid({ onSelectCategory }: PromotionGridProps) 
     },
     {
       tag: 'NEW COLLECTION',
-      title: "Women's Fashion 2025",
+      title: "Women's Fashion",
       desc: 'Kurtis, dresses, co-ords & more',
       btnText: 'Shop Women',
       category: 'women',
@@ -75,7 +75,10 @@ export default function PromotionGrid({ onSelectCategory }: PromotionGridProps) 
             <button
               onClick={() => {
                 onSelectCategory(card.category);
-                document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+                requestAnimationFrame(() => {
+                  document.getElementById('products-section')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                });
               }}
               className={`${card.btnClass} font-bold text-xs px-4 py-2 rounded-lg cursor-pointer transition-colors`}
             >
