@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   fetchCategories,
   fetchProducts,
@@ -348,10 +349,10 @@ export default function Home() {
               Customer Care
             </h4>
             <ul className="text-xs space-y-2 select-none">
-              <li><a href="#" className="hover:text-white transition-colors">How to Order</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Delivery Info</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Return Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Track Order</a></li>
+              <li><Link href="/policy?tab=faq" className="hover:text-white transition-colors">How to Order</Link></li>
+              <li><Link href="/policy?tab=shipping" className="hover:text-white transition-colors">Delivery Info</Link></li>
+              <li><Link href="/policy?tab=return" className="hover:text-white transition-colors">Return Policy</Link></li>
+              <li><Link href="/policy?tab=shipping" className="hover:text-white transition-colors">Track Order</Link></li>
             </ul>
           </div>
 
@@ -361,9 +362,9 @@ export default function Home() {
               Our Policies
             </h4>
             <ul className="text-xs space-y-2 select-none">
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Wholesale Policy</a></li>
+              <li><Link href="/policy?tab=privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/policy?tab=terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/policy?tab=wholesale" className="hover:text-white transition-colors">Wholesale Policy</Link></li>
             </ul>
           </div>
 
