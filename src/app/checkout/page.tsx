@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/CartContext';
 // Force recompile to refresh Turbopack cache
-import { checkout, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings } from '@/lib/api';
+import { checkout, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings, fetchShippingRates, ShippingRateOption } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CreditCard, Gift, Loader2, Package } from 'lucide-react';
+import { ArrowLeft, CreditCard, Gift, Loader2, Package, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -17,6 +17,11 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState<StorefrontSettings | null>(null);
+  
+  // Shipping State
+  const [shippingRates, setShippingRates] = useState<ShippingRateOption[]>([]);
+  const [selectedRate, setSelectedRate] = useState<ShippingRateOption | null>(null);
+  const [fetchingRates, setFetchingRates] = useState(false);
 
   // Fetch settings on mount
   useEffect(() => {
@@ -53,6 +58,43 @@ export default function CheckoutPage() {
       });
     }
   }, [session]);
+
+  // Fetch shipping rates when address changes
+  useEffect(() => {
+    if (!formData.country || !formData.state) {
+      setShippingRates([]);
+      setSelectedRate(null);
+      return;
+    }
+
+    const totalWeight = cartItems.reduce((sum, item) => sum + (item.quantity * 500), 0);
+    const subtotal = cartTotal;
+
+    setFetchingRates(true);
+    fetchShippingRates({
+      destCountry: formData.country,
+      destState: formData.state,
+      destPostcode: formData.postcode,
+      totalWeight,
+      subtotal
+    })
+      .then((rates) => {
+        setShippingRates(rates);
+        if (rates.length > 0) {
+          setSelectedRate(rates[0]);
+        } else {
+          setSelectedRate(null);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching shipping rates:', err);
+        setShippingRates([]);
+        setSelectedRate(null);
+      })
+      .finally(() => {
+        setFetchingRates(false);
+      });
+  }, [formData.country, formData.state, formData.postcode, cartItems, cartTotal]);
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'COD'>('COD');
@@ -103,6 +145,8 @@ export default function CheckoutPage() {
         quantity: item.quantity,
       })),
       payment_method: paymentMethod,
+      shipping_cost: selectedRate?.price || 0,
+      shipping_rate_name: selectedRate?.name || 'Standard Shipping',
     };
 
     const token = (session?.user as any)?.accessToken;
@@ -222,8 +266,8 @@ export default function CheckoutPage() {
       }
     });
 
-    const shipping = 0;
-    const totalAmount = isInclusive ? subtotal : (subtotal + totalTax);
+    const shipping = selectedRate ? selectedRate.price : 0;
+    const totalAmount = isInclusive ? (subtotal + shipping) : (subtotal + totalTax + shipping);
 
     return {
       subtotal,
@@ -419,6 +463,53 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Shipping Method Selector */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+              <h3 className="font-heading text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-1 select-none">
+                🚚 Choose Shipping Method
+              </h3>
+              
+              {!formData.country || !formData.state ? (
+                <p className="text-xs text-slate-400 py-2">Please enter your country and state to view available shipping options.</p>
+              ) : fetchingRates ? (
+                <div className="flex items-center gap-2 text-xs text-slate-500 py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                  Calculating shipping rates...
+                </div>
+              ) : shippingRates.length === 0 ? (
+                <p className="text-xs text-red-500 font-medium py-2">No shipping methods are configured or available for your destination. Please contact store support.</p>
+              ) : (
+                <div className="space-y-3">
+                  {shippingRates.map((rate) => (
+                    <button
+                      key={rate.id}
+                      type="button"
+                      onClick={() => setSelectedRate(rate)}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                        selectedRate?.id === rate.id
+                          ? 'border-[#1a3a6b] bg-blue-50/50 shadow-sm'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Truck className="w-5 h-5 text-slate-400" />
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-800">{rate.name}</h4>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            {rate.type === 'carrier' ? `Live Quote via ${rate.carrier?.toUpperCase()} | ` : ''}
+                            Estimated Delivery: {rate.estimatedDays || 3} days
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-extrabold text-slate-800">
+                        {rate.price === 0 ? 'FREE' : `₹${rate.price.toLocaleString('en-IN')}`}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Payment Method Selector */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
               <h3 className="font-heading text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-1 select-none">
@@ -522,8 +613,10 @@ export default function CheckoutPage() {
                   </div>
                 )}
                 <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
-                  <span>Shipping</span>
-                  <span className="text-[#26a541]">FREE</span>
+                  <span>Shipping {selectedRate ? `(${selectedRate.name})` : ''}</span>
+                  <span className={selectedRate && selectedRate.price > 0 ? "text-slate-800 font-extrabold" : "text-[#26a541]"}>
+                    {selectedRate && selectedRate.price > 0 ? `₹${selectedRate.price.toLocaleString('en-IN')}` : 'FREE'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center border-t border-slate-100 pt-3 mt-1.5 font-heading text-lg font-black text-slate-900">
                   <span>Total Amount</span>

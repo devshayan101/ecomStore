@@ -90,6 +90,8 @@ export interface CheckoutPayload {
     quantity: number;
   }>;
   payment_method: 'STRIPE' | 'COD';
+  shipping_cost?: number;
+  shipping_rate_name?: string;
 }
 
 export async function checkout(payload: CheckoutPayload, token?: string): Promise<any> {
@@ -161,6 +163,36 @@ export async function fetchStorefrontSettings(): Promise<StorefrontSettings> {
     throw new Error('Failed to fetch storefront settings');
   }
   return res.json();
+}
+
+export interface ShippingRateOption {
+  id: string;
+  name: string;
+  price: number;
+  type: string;
+  carrier?: string;
+  estimatedDays?: number;
+}
+
+export async function fetchShippingRates(payload: {
+  destCountry: string;
+  destState: string;
+  destPostcode: string;
+  totalWeight: number;
+  subtotal: number;
+}): Promise<ShippingRateOption[]> {
+  const res = await fetch(`${API_BASE}/shipping/rates`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error('Failed to fetch shipping rates');
+  }
+  const data = await res.json();
+  return data.rates || [];
 }
 
 // --- Storefront Reviews API ---
