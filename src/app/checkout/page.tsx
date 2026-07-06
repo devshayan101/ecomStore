@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/CartContext';
 import { checkout, CheckoutPayload } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CreditCard, Gift, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, cartTotal, clearCart } = useCart();
+  const { data: session } = useSession();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +27,23 @@ export default function CheckoutPage() {
     postcode: '',
     country: 'India',
   });
+
+  // Prefill authenticated customer details
+  useEffect(() => {
+    if (session?.user) {
+      const u = session.user as any;
+      setFormData({
+        name: u.name || '',
+        email: u.email || '',
+        phone: u.phone || '',
+        street: u.address?.street || '',
+        city: u.address?.city || '',
+        state: u.address?.state || '',
+        postcode: u.address?.postcode || '',
+        country: u.address?.country || 'India',
+      });
+    }
+  }, [session]);
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'COD'>('COD');
@@ -72,8 +91,9 @@ export default function CheckoutPage() {
       payment_method: paymentMethod,
     };
 
+    const token = (session?.user as any)?.accessToken;
     try {
-      const result = await checkout(payload);
+      const result = await checkout(payload, token);
       clearCart();
       const orderId = result.order?._id || 'unknown';
       router.push(`/order-success?order_id=${orderId}&method=${paymentMethod}`);

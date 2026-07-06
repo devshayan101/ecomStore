@@ -89,12 +89,17 @@ export interface CheckoutPayload {
   payment_method: 'STRIPE' | 'COD';
 }
 
-export async function checkout(payload: CheckoutPayload): Promise<any> {
+export async function checkout(payload: CheckoutPayload, token?: string): Promise<any> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}/checkout`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(payload),
   });
 

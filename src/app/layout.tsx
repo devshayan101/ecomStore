@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Nunito, Poppins } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/CartContext';
+import SessionProvider from '@/components/SessionProvider';
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -28,9 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${nunito.variable} ${poppins.variable} font-sans antialiased text-[#212121] bg-[#f4f4f4]`}>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <SessionProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </SessionProvider>
       </body>
     </html>
   );
