@@ -30,7 +30,7 @@ interface Order {
   };
   total_amount: number;
   payment_status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
-  shipping_status: 'PENDING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   payment_method: 'STRIPE' | 'COD';
   created_at: string;
 }
@@ -114,14 +114,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   // Calculate stepper state
   const isPaid = order.payment_status === 'PAID';
-  const isShipped = order.shipping_status === 'SHIPPED' || order.shipping_status === 'DELIVERED';
-  const isDelivered = order.shipping_status === 'DELIVERED';
-  const isCancelled = order.shipping_status === 'CANCELLED';
+  const isConfirmed = order.status === 'CONFIRMED' || order.status === 'SHIPPED' || order.status === 'DELIVERED';
+  const isShipped = order.status === 'SHIPPED' || order.status === 'DELIVERED';
+  const isDelivered = order.status === 'DELIVERED';
+  const isCancelled = order.status === 'CANCELLED';
 
   const steps = [
     { label: 'Order Placed', active: true, desc: 'Your order has been recorded' },
-    { label: 'Payment Clear', active: isPaid || isShipped || isDelivered, desc: order.payment_status === 'PENDING' ? 'Awaiting payment confirmation' : 'Payment approved successfully' },
-    { label: 'Shipped', active: isShipped || isDelivered, desc: isShipped ? 'Package in transit' : 'Awaiting dispatch' },
+    { label: 'Confirmed', active: isConfirmed, desc: isConfirmed ? 'Order has been confirmed' : 'Awaiting confirmation' },
+    { label: 'Shipped', active: isShipped, desc: isShipped ? 'Package in transit' : 'Awaiting dispatch' },
     { label: 'Delivered', active: isDelivered, desc: isDelivered ? 'Delivered to recipient' : 'Arrival at destination' }
   ];
 
@@ -156,7 +157,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <span className={`text-[10px] font-black tracking-wider uppercase px-3 py-1 rounded-full border ${
                 isCancelled ? 'bg-rose-50 text-rose-700 border-rose-200' : isDelivered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'
               }`}>
-                🚚 Shipping: {order.shipping_status}
+                🚚 Status: {order.status}
               </span>
             </div>
           </div>
@@ -177,7 +178,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className="hidden md:flex justify-between items-center relative select-none">
                 <div className="absolute top-4 left-0 right-0 h-0.5 bg-slate-100 -z-0" />
                 <div className="absolute top-4 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-blue-500 -z-0 transition-all duration-500" style={{
-                  width: isDelivered ? '100%' : isShipped ? '66.66%' : isPaid ? '33.33%' : '0%'
+                  width: isDelivered ? '100%' : isShipped ? '66.66%' : isConfirmed ? '33.33%' : '0%'
                 }} />
 
                 {steps.map((step, idx) => (
@@ -187,7 +188,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         ? 'bg-gradient-to-br from-[#1a3a6b] to-[#1e4d9e] border-[#c9a84c] text-white shadow-md'
                         : 'bg-white border-slate-200 text-slate-300'
                     }`}>
-                      {step.active && (isDelivered || (idx === 0) || (idx === 1 && isPaid) || (idx === 2 && isShipped)) ? (
+                      {step.active && (isDelivered || (idx === 0) || (idx === 1 && isConfirmed) || (idx === 2 && isShipped)) ? (
                         <CheckCircle className="w-4 h-4 fill-current text-[#c9a84c]" />
                       ) : (
                         <Package className="w-3.5 h-3.5" />

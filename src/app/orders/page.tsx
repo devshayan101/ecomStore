@@ -22,7 +22,7 @@ interface Order {
   items: OrderItem[];
   total_amount: number;
   payment_status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
-  shipping_status: 'PENDING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   payment_method: 'STRIPE' | 'COD';
   created_at: string;
 }
@@ -106,6 +106,9 @@ export default function OrdersPage() {
           break;
         case 'SHIPPED':
           classes = `${base} bg-blue-50 text-blue-700 border border-blue-200/50`;
+          break;
+        case 'CONFIRMED':
+          classes = `${base} bg-indigo-50 text-indigo-700 border border-indigo-200/50`;
           break;
         case 'PENDING':
           classes = `${base} bg-slate-100 text-slate-600 border border-slate-200/50`;
@@ -213,7 +216,7 @@ export default function OrdersPage() {
                           {getStatusBadge('payment', order.payment_status)}
                         </td>
                         <td className="p-4">
-                          {getStatusBadge('shipping', order.shipping_status)}
+                          {getStatusBadge('shipping', order.status)}
                         </td>
                         <td className="p-4 text-center">
                           <Link
@@ -247,7 +250,7 @@ export default function OrdersPage() {
                         <span className="text-[10px] text-slate-400 block mt-0.5">{formatDate(order.created_at)}</span>
                       </div>
                       <div className="flex flex-col gap-1 items-end">
-                        {getStatusBadge('shipping', order.shipping_status)}
+                        {getStatusBadge('shipping', order.status)}
                       </div>
                     </div>
 
