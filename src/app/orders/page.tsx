@@ -81,33 +81,43 @@ export default function OrdersPage() {
   // Status badge style helper
   const getStatusBadge = (type: 'payment' | 'shipping', status: string) => {
     const base = "text-[9px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full w-fit select-none";
+    let classes = "";
     if (type === 'payment') {
       switch (status) {
         case 'PAID':
-          return `${base} bg-emerald-50 text-emerald-700 border border-emerald-200/50`;
+          classes = `${base} bg-emerald-50 text-emerald-700 border border-emerald-200/50`;
+          break;
         case 'PENDING':
-          return `${base} bg-amber-50 text-amber-700 border border-amber-200/50`;
+          classes = `${base} bg-amber-50 text-amber-700 border border-amber-200/50`;
+          break;
         case 'FAILED':
-          return `${base} bg-rose-50 text-rose-700 border border-rose-200/50`;
+          classes = `${base} bg-rose-50 text-rose-700 border border-rose-200/50`;
+          break;
         case 'REFUNDED':
-          return `${base} bg-purple-50 text-purple-700 border border-purple-200/50`;
+          classes = `${base} bg-purple-50 text-purple-700 border border-purple-200/50`;
+          break;
         default:
-          return `${base} bg-slate-50 text-slate-600`;
+          classes = `${base} bg-slate-50 text-slate-600`;
       }
     } else {
       switch (status) {
         case 'DELIVERED':
-          return `${base} bg-emerald-50 text-emerald-700 border border-emerald-200/50`;
+          classes = `${base} bg-emerald-50 text-emerald-700 border border-emerald-200/50`;
+          break;
         case 'SHIPPED':
-          return `${base} bg-blue-50 text-blue-700 border border-blue-200/50`;
+          classes = `${base} bg-blue-50 text-blue-700 border border-blue-200/50`;
+          break;
         case 'PENDING':
-          return `${base} bg-slate-100 text-slate-600 border border-slate-200/50`;
+          classes = `${base} bg-slate-100 text-slate-600 border border-slate-200/50`;
+          break;
         case 'CANCELLED':
-          return `${base} bg-rose-50 text-rose-700 border border-rose-200/50`;
+          classes = `${base} bg-rose-50 text-rose-700 border border-rose-200/50`;
+          break;
         default:
-          return `${base} bg-slate-50 text-slate-600`;
+          classes = `${base} bg-slate-50 text-slate-600`;
       }
     }
+    return <span className={classes}>{status}</span>;
   };
 
   if (status === 'loading' || loading) {
