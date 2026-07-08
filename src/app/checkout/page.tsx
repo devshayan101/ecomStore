@@ -113,6 +113,13 @@ export default function CheckoutPage() {
     }
   };
 
+  const normalizeCountry = (country: string) => {
+    const c = country.trim().toLowerCase();
+    if (c === 'india') return 'in';
+    if (c === 'united states' || c === 'usa' || c === 'us') return 'us';
+    return c;
+  };
+
   const getPricingDetails = () => {
     let subtotal = 0;
     let totalTax = 0;
@@ -128,23 +135,26 @@ export default function CheckoutPage() {
 
       // Find tax rate
       let taxRate = 0;
-      const shippingCountry = formData.country || 'India';
+      const rawCountry = formData.country || 'India';
+      const shippingCountry = normalizeCountry(rawCountry);
       const shippingState = formData.state || '';
 
-      const productSlab = (item.product as any).tax_slabs?.find((slab: any) => 
-        slab.region.toLowerCase() === shippingCountry.toLowerCase() ||
-        slab.region.toLowerCase() === `${shippingCountry} - ${shippingState}`.toLowerCase()
-      );
+      const productSlab = (item.product as any).tax_slabs?.find((slab: any) => {
+        const slabRegion = normalizeCountry(slab.region);
+        return slabRegion === shippingCountry ||
+               slabRegion === `${shippingCountry} - ${shippingState}`.toLowerCase();
+      });
 
       if (productSlab) {
         taxRate = productSlab.rate;
       } else {
-        const globalRule = taxRules.find((rule: any) => 
-          rule.active && (
-            rule.country.toLowerCase() === shippingCountry.toLowerCase() &&
+        const globalRule = taxRules.find((rule: any) => {
+          const ruleCountry = normalizeCountry(rule.country);
+          return rule.active && (
+            ruleCountry === shippingCountry &&
             (!rule.state || rule.state.toLowerCase() === shippingState.toLowerCase() || rule.state === "")
-          )
-        );
+          );
+        });
         if (globalRule) {
           taxRate = globalRule.rate;
         }
