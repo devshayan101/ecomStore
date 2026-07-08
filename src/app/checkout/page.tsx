@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/lib/CartContext';
-import { checkout, CheckoutPayload } from '@/lib/api';
+// Force recompile to refresh Turbopack cache
+import { checkout, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CreditCard, Gift, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -15,6 +16,14 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<StorefrontSettings | null>(null);
+
+  // Fetch settings on mount
+  useEffect(() => {
+    fetchStorefrontSettings()
+      .then(setSettings)
+      .catch(console.error);
+  }, []);
 
   // Address Form State
   const [formData, setFormData] = useState({
@@ -103,6 +112,69 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
+
+  const getPricingDetails = () => {
+    let subtotal = 0;
+    let totalTax = 0;
+    const isInclusive = settings?.taxes?.gstVatSettings?.inclusive ?? false;
+    const isEnabled = settings?.taxes?.gstVatSettings?.enabled ?? true;
+    const taxRules = settings?.taxes?.taxRules ?? [];
+
+    cartItems.forEach((item) => {
+      const itemSubtotal = item.price * item.quantity;
+      subtotal += itemSubtotal;
+
+      if (!isEnabled) return;
+
+      // Find tax rate
+      let taxRate = 0;
+      const shippingCountry = formData.country || 'India';
+      const shippingState = formData.state || '';
+
+      const productSlab = (item.product as any).tax_slabs?.find((slab: any) => 
+        slab.region.toLowerCase() === shippingCountry.toLowerCase() ||
+        slab.region.toLowerCase() === `${shippingCountry} - ${shippingState}`.toLowerCase()
+      );
+
+      if (productSlab) {
+        taxRate = productSlab.rate;
+      } else {
+        const globalRule = taxRules.find((rule: any) => 
+          rule.active && (
+            rule.country.toLowerCase() === shippingCountry.toLowerCase() &&
+            (!rule.state || rule.state.toLowerCase() === shippingState.toLowerCase() || rule.state === "")
+          )
+        );
+        if (globalRule) {
+          taxRate = globalRule.rate;
+        }
+      }
+
+      if (isInclusive) {
+        // Tax is included: calculate how much tax is inside
+        const itemTax = itemSubtotal - (itemSubtotal / (1 + taxRate / 100));
+        totalTax += itemTax;
+      } else {
+        // Tax is exclusive: add on top
+        const itemTax = itemSubtotal * (taxRate / 100);
+        totalTax += itemTax;
+      }
+    });
+
+    const shipping = 0;
+    const totalAmount = isInclusive ? subtotal : (subtotal + totalTax);
+
+    return {
+      subtotal,
+      tax: totalTax,
+      shipping,
+      total: totalAmount,
+      isInclusive,
+      isEnabled,
+    };
+  };
+
+  const pricing = getPricingDetails();
 
   return (
     <div className="min-h-screen bg-[#f4f4f4] py-8 px-4 md:px-8">
@@ -253,11 +325,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('COD')}
-                  className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${
-                    paymentMethod === 'COD'
-                      ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
+                  className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'COD'
+                    ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
+                    : 'border-slate-200 hover:border-slate-300'
+                    }`}
                 >
                   <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
                     <Gift className="w-5 h-5" />
@@ -272,11 +343,10 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('STRIPE')}
-                  className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${
-                    paymentMethod === 'STRIPE'
-                      ? 'border-blue-500 bg-blue-50/50 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
+                  className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'STRIPE'
+                    ? 'border-blue-500 bg-blue-50/50 shadow-sm'
+                    : 'border-slate-200 hover:border-slate-300'
+                    }`}
                 >
                   <div className="w-10 h-10 bg-blue-50 text-[#1a3a6b] rounded-full flex items-center justify-center">
                     <CreditCard className="w-5 h-5" />
@@ -330,15 +400,21 @@ export default function CheckoutPage() {
               <div className="border-t border-slate-100 pt-3.5 mt-3 space-y-2 select-none">
                 <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
                   <span>Subtotal</span>
-                  <span>₹{cartTotal.toLocaleString('en-IN')}</span>
+                  <span>₹{pricing.subtotal.toLocaleString('en-IN')}</span>
                 </div>
+                {pricing.isEnabled && pricing.tax > 0 && (
+                  <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
+                    <span>Tax (GST/VAT) {pricing.isInclusive && '(Included)'}</span>
+                    <span>₹{Math.round(pricing.tax).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
                   <span>Shipping</span>
                   <span className="text-[#26a541]">FREE</span>
                 </div>
                 <div className="flex justify-between items-center border-t border-slate-100 pt-3 mt-1.5 font-heading text-lg font-black text-slate-900">
                   <span>Total Amount</span>
-                  <span>₹{cartTotal.toLocaleString('en-IN')}</span>
+                  <span>₹{Math.round(pricing.total).toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
@@ -361,7 +437,7 @@ export default function CheckoutPage() {
                     Placing Your Order...
                   </>
                 ) : (
-                  `Place Order — ₹${cartTotal.toLocaleString('en-IN')}`
+                  `Place Order — ₹${Math.round(pricing.total).toLocaleString('en-IN')}`
                 )}
               </button>
             </div>

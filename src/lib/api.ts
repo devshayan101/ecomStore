@@ -23,6 +23,7 @@ export interface Product {
   images: string[];
   status: 'active' | 'draft' | 'archived';
   variants: Variant[];
+  tax_slabs?: Array<{ region: string; rate: number }>;
   created_at: string;
   updated_at: string;
 }
@@ -108,5 +109,39 @@ export async function checkout(payload: CheckoutPayload, token?: string): Promis
     throw new Error(errorData.message || 'Checkout failed');
   }
 
+  return res.json();
+}
+
+export interface TaxRule {
+  _id?: string;
+  country: string;
+  state: string;
+  rate: number;
+  name: string;
+  active: boolean;
+}
+
+export interface GstVatSettings {
+  enabled: boolean;
+  inclusive: boolean;
+}
+
+export interface TaxSettings {
+  taxRules: TaxRule[];
+  gstVatSettings: GstVatSettings;
+}
+
+export interface StorefrontSettings {
+  taxes?: TaxSettings;
+  general?: {
+    currency: string;
+  };
+}
+
+export async function fetchStorefrontSettings(): Promise<StorefrontSettings> {
+  const res = await fetch(`${API_BASE}/settings`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to fetch storefront settings');
+  }
   return res.json();
 }
