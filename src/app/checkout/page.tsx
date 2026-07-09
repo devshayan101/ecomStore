@@ -59,7 +59,12 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      if (name === 'country') {
+        return { ...prev, country: value, state: '' };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -140,21 +145,67 @@ export default function CheckoutPage() {
       const shippingState = formData.state || '';
 
       const productSlab = (item.product as any).tax_slabs?.find((slab: any) => {
-        const slabRegion = normalizeCountry(slab.region);
-        return slabRegion === shippingCountry ||
-               slabRegion === `${shippingCountry} - ${shippingState}`.toLowerCase();
+        const slabRegion = slab.region.toLowerCase();
+        const matchedCountry = rawCountry.toLowerCase();
+        const matchedCode = normalizeCountry(rawCountry).toLowerCase();
+
+        const matchedRules = taxRules.filter((r: any) => 
+          (r.country.toLowerCase() === matchedCountry || (r.countryCode || '').toLowerCase() === matchedCode) &&
+          r.state.toLowerCase() === shippingState.toLowerCase()
+        );
+        const resolvedStateCodes = matchedRules.map((r: any) => (r.stateCode || '').toLowerCase()).filter(Boolean);
+
+        const stateMatches = (slabState: string) => {
+          const s = slabState.toLowerCase();
+          const sh = shippingState.toLowerCase();
+          return s === sh || resolvedStateCodes.includes(s);
+        };
+
+        const parts = slabRegion.split(' - ');
+        if (parts.length === 1) {
+          return slabRegion === matchedCountry || slabRegion === matchedCode;
+        } else if (parts.length === 2) {
+          const slabCountry = parts[0];
+          const slabState = parts[1];
+          const countryMatches = slabCountry === matchedCountry || slabCountry === matchedCode;
+          return countryMatches && stateMatches(slabState);
+        }
+        return false;
       });
 
       if (productSlab) {
         taxRate = productSlab.rate;
       } else {
-        const globalRule = taxRules.find((rule: any) => {
-          const ruleCountry = normalizeCountry(rule.country);
-          return rule.active && (
-            ruleCountry === shippingCountry &&
-            (!rule.state || rule.state.toLowerCase() === shippingState.toLowerCase() || rule.state === "")
-          );
+        const matchedCountry = rawCountry.toLowerCase();
+        const matchedCode = normalizeCountry(rawCountry).toLowerCase();
+        const matchedState = shippingState.toLowerCase();
+
+        const countryRules = taxRules.filter((rule: any) => {
+          if (!rule.active) return false;
+          const ruleCountry = rule.country.toLowerCase();
+          const ruleCountryCode = (rule.countryCode || '').toLowerCase();
+          return ruleCountry === matchedCountry || ruleCountryCode === matchedCode || ruleCountryCode === matchedCountry || ruleCountry === matchedCode;
         });
+
+        let globalRule = countryRules.find((rule: any) => {
+          const ruleState = (rule.state || '').toLowerCase();
+          const ruleStateCode = (rule.stateCode || '').toLowerCase();
+          if (!ruleState || ruleState === 'all states' || ruleStateCode === 'all') return false;
+          return ruleState === matchedState || ruleStateCode === matchedState;
+        });
+
+        if (!globalRule) {
+          globalRule = countryRules.find((rule: any) => {
+            const ruleState = (rule.state || '').toLowerCase();
+            const ruleStateCode = (rule.stateCode || '').toLowerCase();
+            return ruleState === 'all states' || ruleStateCode === 'all';
+          });
+        }
+
+        if (!globalRule) {
+          globalRule = countryRules.find((rule: any) => !rule.state);
+        }
+
         if (globalRule) {
           taxRate = globalRule.rate;
         }
@@ -185,6 +236,12 @@ export default function CheckoutPage() {
   };
 
   const pricing = getPricingDetails();
+
+  const selectedCountryName = formData.country || 'India';
+  const matchedCountryConfig = settings?.taxes?.countriesConfig?.find(
+    (c: any) => c.name.toLowerCase() === selectedCountryName.toLowerCase() || c.code.toLowerCase() === selectedCountryName.toLowerCase()
+  );
+  const availableStates = matchedCountryConfig?.states || [];
 
   return (
     <div className="min-h-screen bg-[#f4f4f4] py-8 px-4 md:px-8">
@@ -284,16 +341,34 @@ export default function CheckoutPage() {
 
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="state" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">State *</label>
-                  <input
-                    type="text"
-                    id="state"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. Punjab"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
+                  {availableStates.length > 0 ? (
+                    <select
+                      id="state"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      required
+                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors cursor-pointer"
+                    >
+                      <option value="">Select State</option>
+                      {availableStates.map((s: any) => (
+                        <option key={s.code} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      id="state"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. Punjab"
+                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -311,15 +386,35 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="country" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Country</label>
-                  <input
-                    type="text"
-                    id="country"
-                    name="country"
-                    value={formData.country}
-                    readOnly
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-100 outline-none text-slate-500 cursor-not-allowed"
-                  />
+                  <label htmlFor="country" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Country *</label>
+                  {settings?.taxes?.taxRules && Array.from(new Set(settings.taxes.taxRules.map((r: any) => r.country))).filter(Boolean).length > 0 ? (
+                    <select
+                      id="country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      required
+                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors cursor-pointer"
+                    >
+                      <option value="">Select Country</option>
+                      {Array.from(new Set(settings.taxes.taxRules.map((r: any) => r.country))).filter(Boolean).map((c: any) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      id="country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. India"
+                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                    />
+                  )}
                 </div>
               </div>
             </div>
