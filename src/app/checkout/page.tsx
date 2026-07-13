@@ -431,7 +431,23 @@ export default function CheckoutPage() {
 
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="country" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Country *</label>
-                  {settings?.taxes?.taxRules && Array.from(new Set(settings.taxes.taxRules.map((r: any) => r.country))).filter(Boolean).length > 0 ? (
+                  {settings?.taxes?.countriesConfig && settings.taxes.countriesConfig.length > 0 ? (
+                    <select
+                      id="country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      required
+                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors cursor-pointer"
+                    >
+                      <option value="">Select Country</option>
+                      {settings.taxes.countriesConfig.map((c: any) => (
+                        <option key={c.name} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : settings?.taxes?.taxRules && Array.from(new Set(settings.taxes.taxRules.map((r: any) => r.country))).filter(Boolean).length > 0 ? (
                     <select
                       id="country"
                       name="country"
