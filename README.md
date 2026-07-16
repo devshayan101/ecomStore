@@ -8,6 +8,8 @@ Olinbuy is a modern, high-fidelity, and responsive e-commerce storefront built w
 *   **Intuitive Product Catalog**: Features a hero promotions carousel, real-time search, category filtering strip, trust badges, and special wholesale deals.
 *   **Modular Cart State**: Client-side state managed via context hooks that persist cart items automatically in the browser's `localStorage`.
 *   **Standardized Checkout Cycle**: A multi-mode checkout page accepting recipient shipping details and offering immediate options for:
+    *   **Active Shipping Zone Filtering**: Country and state dropdown choices are dynamically constrained to destinations covered by active admin Shipping Zones.
+    *   **Custom Delivery Estimates**: Displays configured custom delivery time ranges for rate options.
     *   **Cash on Delivery (COD)**: Instantly logs orders into the administration database and locks inventory, bypassing Stripe creation.
     *   **Credit Card (Stripe)**: Generates secure Stripe PaymentIntents and returns transaction secrets.
 *   **Professional Assets**: Standardized SVG layouts powered by Lucide icons in place of default browser emojis.
