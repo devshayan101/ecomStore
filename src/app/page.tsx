@@ -13,6 +13,7 @@ import HeroCarousel from '@/components/HeroCarousel';
 import TrustBadges from '@/components/TrustBadges';
 import WholesaleSection from '@/components/WholesaleSection';
 import ProductCard from '@/components/ProductCard';
+import ProductDetailsModal from '@/components/ProductDetailsModal';
 import CartDrawer from '@/components/CartDrawer';
 import { Sparkles, ShoppingBag, Shirt, Package, Heart, Scissors, Smile, Star, Phone } from 'lucide-react';
 
@@ -62,6 +63,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Load categories
   useEffect(() => {
@@ -217,6 +219,7 @@ export default function Home() {
                 key={prod._id}
                 product={prod}
                 onAddToCart={addToCart}
+                onOpenDetails={setSelectedProduct}
               />
             ))}
           </div>
@@ -328,6 +331,14 @@ export default function Home() {
 
       {/* Cart Slider Drawer */}
       <CartDrawer />
+
+      {/* Product Details & Reviews Modal */}
+      <ProductDetailsModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={addToCart}
+      />
 
       {/* Mobile Navigation Drawer Overlay */}
       {isMobileMenuOpen && (

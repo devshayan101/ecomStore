@@ -24,6 +24,8 @@ export interface Product {
   status: 'active' | 'draft' | 'archived';
   variants: Variant[];
   tax_slabs?: Array<{ region: string; rate: number }>;
+  rating_average?: number;
+  rating_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -157,6 +159,73 @@ export async function fetchStorefrontSettings(): Promise<StorefrontSettings> {
   const res = await fetch(`${API_BASE}/settings`, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error('Failed to fetch storefront settings');
+  }
+  return res.json();
+}
+
+// --- Storefront Reviews API ---
+
+export interface Review {
+  _id: string;
+  product_id: string;
+  customer_id: string;
+  customer_name: string;
+  rating: number;
+  title?: string;
+  comment?: string;
+  images: string[];
+  status: 'pending' | 'approved' | 'rejected';
+  admin_reply?: {
+    text: string;
+    replied_at: string;
+    replied_by: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchProductReviews(productId: string): Promise<Review[]> {
+  const res = await fetch(`${API_BASE}/products/${productId}/reviews`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to fetch product reviews');
+  }
+  return res.json();
+}
+
+export async function createProductReview(
+  productId: string,
+  data: { rating: number; title?: string; comment?: string; images?: string[] },
+  token: string
+): Promise<Review> {
+  const res = await fetch(`${API_BASE}/products/${productId}/reviews`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to submit review');
+  }
+  return res.json();
+}
+
+export async function getReviewImageUploadUrl(
+  contentType: string,
+  token: string
+): Promise<{ uploadUrl: string; objectUrl: string }> {
+  const res = await fetch(`${API_BASE}/products/reviews/upload-url`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ content_type: contentType })
+  });
+  if (!res.ok) {
+    throw new Error('Failed to generate upload URL');
   }
   return res.json();
 }
