@@ -98,22 +98,35 @@ export default function HeroCarousel({ onSelectCategory }: HeroCarouselProps) {
             <p className="text-[11px] md:text-sm text-white/80 line-clamp-2 md:line-clamp-none max-w-lg mb-4 select-none">
               {slide.subtitle}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <button
-                onClick={() => onSelectCategory(slide.category)}
+                onClick={() => {
+                  onSelectCategory(slide.category);
+                  document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="bg-white text-slate-900 font-bold hover:shadow-lg transition-shadow text-[10px] md:text-xs px-4 py-2 rounded-lg cursor-pointer"
               >
                 {slide.buttonText} →
               </button>
+              {slide.category === 'wholesale' && (
+                <a
+                  href="https://wa.me/919690914734?text=Hello%2C%20I%20am%20interested%20in%20your%20wholesale%20program."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-[#25D366] hover:bg-[#1da854] text-white font-bold hover:shadow-lg transition-all text-[10px] md:text-xs px-4 py-2 rounded-lg cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-sm">💬</span> WhatsApp
+                </a>
+              )}
             </div>
           </div>
 
           {/* Floating Badge */}
-          <div className="absolute top-4 right-4 bg-black/35 backdrop-blur-md border border-white/20 rounded-xl p-2.5 text-center shadow-lg select-none z-10 hidden sm:block">
-            <span className="font-heading text-lg md:text-2xl font-black text-[#fde68a] block leading-none">
+          <div className="absolute top-4 right-4 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 border border-amber-300 rounded-full w-16 h-16 md:w-20 md:h-20 flex flex-col items-center justify-center text-center shadow-lg select-none z-10 hidden sm:flex animate-pulse">
+            <span className="font-heading text-base md:text-xl font-black text-slate-950 block leading-none">
               {slide.badge}
             </span>
-            <span className="text-[8px] text-white/80 tracking-widest uppercase font-bold mt-0.5 block">
+            <span className="text-[7px] md:text-[8px] text-slate-950 tracking-wider uppercase font-black mt-0.5 block leading-none">
               {slide.badgeText}
             </span>
           </div>

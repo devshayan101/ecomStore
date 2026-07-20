@@ -11,7 +11,7 @@ import { useCart } from '@/lib/CartContext';
 import Navbar from '@/components/Navbar';
 import HeroCarousel from '@/components/HeroCarousel';
 import TrustBadges from '@/components/TrustBadges';
-import WholesaleSection from '@/components/WholesaleSection';
+import PromotionGrid from '@/components/PromotionGrid';
 import ProductCard from '@/components/ProductCard';
 import ProductDetailsModal from '@/components/ProductDetailsModal';
 import CartDrawer from '@/components/CartDrawer';
@@ -64,6 +64,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   // Load categories
   useEffect(() => {
@@ -71,6 +72,25 @@ export default function Home() {
       .then((data) => setCategories(data))
       .catch((err) => console.error('Error fetching categories:', err));
   }, []);
+
+  // Fetch category counts dynamically on load
+  useEffect(() => {
+    fetchProducts({ limit: '100' })
+      .then((data) => {
+        const counts: Record<string, number> = {};
+        let total = 0;
+        (data.items || []).forEach((prod) => {
+          const cat = categories.find((c) => c._id === prod.category_id);
+          if (cat) {
+            counts[cat.slug] = (counts[cat.slug] || 0) + 1;
+            total++;
+          }
+        });
+        counts['all'] = total;
+        setCategoryCounts(counts);
+      })
+      .catch((err) => console.error('Error counting products:', err));
+  }, [categories]);
 
   // Load products based on filter
   useEffect(() => {
@@ -101,20 +121,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      {/* Announcement Bar */}
-      <div className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 text-white text-[10px] md:text-xs font-extrabold uppercase py-2 tracking-wider overflow-hidden border-b border-emerald-500/20 select-none">
-        <div className="animate-marquee">
-          <span>🚚 FREE DELIVERY | 2-3 Days Local, 10-12 Days Pan-India</span>
-          <span>✨ NEW ARRIVALS — SKINCARE, FASHION & MORE</span>
-          <span>📦 WHOLESALE AVAILABLE — MOQ ₹2000</span>
-          <span>💰 COD AVAILABLE ACROSS INDIA</span>
-          <span>🚚 FREE DELIVERY | 2-3 Days Local, 10-12 Days Pan-India</span>
-          <span>✨ NEW ARRIVALS — SKINCARE, FASHION & MORE</span>
-          <span>📦 WHOLESALE AVAILABLE — MOQ ₹2000</span>
-          <span>💰 COD AVAILABLE ACROSS INDIA</span>
-        </div>
-      </div>
-
       {/* Main Header Navbar */}
       <Navbar
         searchTerm={searchTerm}
@@ -122,21 +128,47 @@ export default function Home() {
         onMenuClick={() => setIsMobileMenuOpen(true)}
       />
 
+      {/* Category Tab Bar (Under Header) */}
+      <nav className="w-full bg-[#f0f4f9] border-b border-slate-200 select-none shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="flex gap-1 overflow-x-auto no-scrollbar py-2 text-xs font-bold text-slate-600">
+            {/* 'Home' Tab */}
+            <button
+              onClick={() => handleSelectCategory('all')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                selectedCategory === 'all'
+                  ? 'bg-white text-[#1a3a6b] shadow-sm border border-slate-200'
+                  : 'hover:bg-slate-200/50 hover:text-slate-800'
+              }`}
+            >
+              <span>🏠</span> Home
+            </button>
+            {/* Other Category Tabs */}
+            {categories.map((cat) => {
+              const meta = CATEGORY_META[cat.slug] || { emoji: '📦' };
+              const isActive = selectedCategory === cat.slug;
+              return (
+                <button
+                  key={cat._id}
+                  onClick={() => handleSelectCategory(cat.slug)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? 'bg-white text-[#1a3a6b] shadow-sm border border-slate-200'
+                      : 'hover:bg-slate-200/50 hover:text-slate-800'
+                  }`}
+                >
+                  <span>{meta.emoji}</span> {cat.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-8 py-6">
-        {/* Hero Banner Carousel (Only show on all products) */}
-        {selectedCategory === 'all' && !searchTerm && (
-          <HeroCarousel onSelectCategory={handleSelectCategory} />
-        )}
-
-        {/* Trust Badges */}
-        {selectedCategory === 'all' && !searchTerm && <TrustBadges />}
-
-        {/* Category Circle Strips */}
+        {/* Category Circle Strips (Moved to the very top of main content area) */}
         <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
-          <h3 className="font-heading text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 select-none">
-            Browse Categories
-          </h3>
           <div className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar justify-start md:justify-around py-1">
             {/* 'All' Circle */}
             <button
@@ -149,14 +181,21 @@ export default function Home() {
                 <span className="text-2xl md:text-3xl">{CATEGORY_META.all.emoji}</span>
               </div>
               <span className={`text-[11px] md:text-xs font-extrabold select-none ${
-                selectedCategory === 'all' ? 'text-[#1a3a6b]' : 'text-slate-600'
+                selectedCategory === 'all' ? 'text-[#1a3a6b] font-black' : 'text-slate-700'
               }`}>
-                All Products
+                All
+              </span>
+              <span className="text-[9px] text-slate-400 font-bold -mt-1 block">
+                {categoryCounts['all'] !== undefined ? `${categoryCounts['all']} items` : 'Loading...'}
               </span>
             </button>
 
             {categories.map((cat) => {
               const meta = CATEGORY_META[cat.slug] || { emoji: '📦', bg: 'from-slate-50 to-slate-200' };
+              const count = categoryCounts[cat.slug];
+              const isComing = count === undefined || count === 0;
+              const countLabel = isComing ? 'Coming' : `${count} items`;
+
               return (
                 <button
                   key={cat._id}
@@ -169,9 +208,12 @@ export default function Home() {
                     <span className="text-2xl md:text-3xl">{meta.emoji}</span>
                   </div>
                   <span className={`text-[11px] md:text-xs font-extrabold select-none ${
-                    selectedCategory === cat.slug ? 'text-[#1a3a6b]' : 'text-slate-600'
+                    selectedCategory === cat.slug ? 'text-[#1a3a6b] font-black' : 'text-slate-700'
                   }`}>
-                    {cat.name}
+                    {cat.name.replace("Fashion", "").replace("Fashion", "").trim()}
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-bold -mt-1 block">
+                    {countLabel}
                   </span>
                 </button>
               );
@@ -179,9 +221,27 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Wholesale Promotion Section (Show on home or wholesale) */}
-        {(selectedCategory === 'all' || selectedCategory === 'wholesale') && !searchTerm && (
-          <WholesaleSection onSelectCategory={handleSelectCategory} />
+        {/* Announcement / Marquee Bar (Moved under categories circle cards) */}
+        <div className="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 text-white text-[10px] md:text-xs font-extrabold uppercase py-2.5 tracking-wider overflow-hidden border-b border-emerald-500/20 select-none rounded-xl mb-6 shadow-sm">
+          <div className="animate-marquee">
+            <span>🚚 FREE DELIVERY | 2-3 Days Local, 10-12 Days Pan-India &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>✨ NEW ARRIVALS — SKINCARE, FASHION & MORE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>📦 WHOLESALE AVAILABLE — MOQ ₹2000 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span>💰 COD AVAILABLE ACROSS INDIA &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          </div>
+        </div>
+
+        {/* Hero Banner Carousel (Only show on all products) */}
+        {selectedCategory === 'all' && !searchTerm && (
+          <HeroCarousel onSelectCategory={handleSelectCategory} />
+        )}
+
+        {/* Trust Badges */}
+        {selectedCategory === 'all' && !searchTerm && <TrustBadges />}
+
+        {/* Category Promotion Cards Grid */}
+        {selectedCategory === 'all' && !searchTerm && (
+          <PromotionGrid onSelectCategory={handleSelectCategory} />
         )}
 
         {/* Products Grid Header */}
