@@ -26,7 +26,20 @@ export default function CheckoutPage() {
   // Fetch settings on mount
   useEffect(() => {
     fetchStorefrontSettings()
-      .then(setSettings)
+      .then((s) => {
+        setSettings(s);
+        const allowedCountries = s.taxes?.countriesConfig || [];
+        if (allowedCountries.length > 0) {
+          const hasIndia = allowedCountries.some((c: any) => c.name.toLowerCase() === 'india');
+          if (!hasIndia) {
+            setFormData(prev => ({
+              ...prev,
+              country: allowedCountries[0].name,
+              state: ''
+            }));
+          }
+        }
+      })
       .catch(console.error);
   }, []);
 
@@ -513,7 +526,7 @@ export default function CheckoutPage() {
                           <h4 className="text-xs font-bold text-slate-800">{rate.name}</h4>
                           <p className="text-[10px] text-slate-400 mt-0.5">
                             {rate.type === 'carrier' ? `Live Quote via ${rate.carrier?.toUpperCase()} | ` : ''}
-                            Estimated Delivery: {rate.estimatedDays || 3} days
+                            Estimated Delivery: {rate.deliveryTime || `${rate.estimatedDays || 3} days`}
                           </p>
                         </div>
                       </div>

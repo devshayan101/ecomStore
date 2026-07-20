@@ -172,6 +172,7 @@ export interface ShippingRateOption {
   type: string;
   carrier?: string;
   estimatedDays?: number;
+  deliveryTime?: string;
 }
 
 export async function fetchShippingRates(payload: {
