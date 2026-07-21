@@ -89,7 +89,7 @@ export interface CheckoutPayload {
     price_at_purchase: number;
     quantity: number;
   }>;
-  payment_method: 'STRIPE' | 'COD';
+  payment_method: 'STRIPE' | 'RAZORPAY' | 'COD';
   shipping_cost?: number;
   shipping_rate_name?: string;
 }
@@ -111,6 +111,33 @@ export async function checkout(payload: CheckoutPayload, token?: string): Promis
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.message || 'Checkout failed');
+  }
+
+  return res.json();
+}
+
+export async function verifyRazorpayPayment(
+  orderId: string,
+  razorpayPaymentId: string,
+  razorpayOrderId: string,
+  razorpaySignature: string
+): Promise<any> {
+  const res = await fetch(`${API_BASE}/verify-razorpay`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      order_id: orderId,
+      razorpay_payment_id: razorpayPaymentId,
+      razorpay_order_id: razorpayOrderId,
+      razorpay_signature: razorpaySignature,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Razorpay payment verification failed');
   }
 
   return res.json();

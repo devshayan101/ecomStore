@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Script from 'next/script';
 import { useCart } from '@/lib/CartContext';
-// Force recompile to refresh Turbopack cache
-import { checkout, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings, fetchShippingRates, ShippingRateOption } from '@/lib/api';
+import { checkout, verifyRazorpayPayment, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings, fetchShippingRates, ShippingRateOption } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CreditCard, Gift, Loader2, Package, Truck } from 'lucide-react';
+import { ArrowLeft, CreditCard, Gift, Loader2, Package, Truck, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -23,6 +23,23 @@ export default function CheckoutPage() {
   const [selectedRate, setSelectedRate] = useState<ShippingRateOption | null>(null);
   const [fetchingRates, setFetchingRates] = useState(false);
 
+  const getValidCountryAndState = (
+    candidateCountry: string,
+    candidateState: string,
+    allowedCountries: any[]
+  ) => {
+    if (!allowedCountries || allowedCountries.length === 0) {
+      return { country: candidateCountry, state: candidateState };
+    }
+    const matched = allowedCountries.find(
+      (c: any) => c.name.toLowerCase() === candidateCountry.toLowerCase()
+    );
+    if (matched) {
+      return { country: matched.name, state: candidateState };
+    }
+    return { country: allowedCountries[0].name, state: '' };
+  };
+
   // Fetch settings on mount
   useEffect(() => {
     fetchStorefrontSettings()
@@ -30,14 +47,10 @@ export default function CheckoutPage() {
         setSettings(s);
         const allowedCountries = s.taxes?.countriesConfig || [];
         if (allowedCountries.length > 0) {
-          const hasIndia = allowedCountries.some((c: any) => c.name.toLowerCase() === 'india');
-          if (!hasIndia) {
-            setFormData(prev => ({
-              ...prev,
-              country: allowedCountries[0].name,
-              state: ''
-            }));
-          }
+          setFormData((prev) => {
+            const { country, state } = getValidCountryAndState(prev.country, prev.state, allowedCountries);
+            return { ...prev, country, state };
+          });
         }
       })
       .catch(console.error);
@@ -59,18 +72,23 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (session?.user) {
       const u = session.user as any;
+      const sessionCountry = u.address?.country || 'India';
+      const sessionState = u.address?.state || '';
+      const allowedCountries = settings?.taxes?.countriesConfig || [];
+      const { country, state } = getValidCountryAndState(sessionCountry, sessionState, allowedCountries);
+
       setFormData({
         name: u.name || '',
         email: u.email || '',
         phone: u.phone || '',
         street: u.address?.street || '',
         city: u.address?.city || '',
-        state: u.address?.state || '',
+        state,
         postcode: u.address?.postcode || '',
-        country: u.address?.country || 'India',
+        country,
       });
     }
-  }, [session]);
+  }, [session, settings]);
 
   // Fetch shipping rates when address changes
   useEffect(() => {
@@ -110,7 +128,21 @@ export default function CheckoutPage() {
   }, [formData.country, formData.state, formData.postcode, cartItems, cartTotal]);
 
   // Payment State
-  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'COD'>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'RAZORPAY' | 'COD'>('RAZORPAY');
+
+  const isDomestic = !formData.country || formData.country.trim().toLowerCase() === 'india' || formData.country.trim().toLowerCase() === 'in';
+
+  useEffect(() => {
+    if (isDomestic) {
+      if (paymentMethod === 'STRIPE') {
+        setPaymentMethod('RAZORPAY');
+      }
+    } else {
+      if (paymentMethod !== 'STRIPE') {
+        setPaymentMethod('STRIPE');
+      }
+    }
+  }, [formData.country, isDomestic]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -165,8 +197,61 @@ export default function CheckoutPage() {
     const token = (session?.user as any)?.accessToken;
     try {
       const result = await checkout(payload, token);
-      clearCart();
       const orderId = result.order?._id || 'unknown';
+
+      if (paymentMethod === 'RAZORPAY' && result.razorpay_order) {
+        const { razorpay_order_id, razorpay_key_id, amount, currency } = result.razorpay_order;
+
+        if (typeof (window as any).Razorpay === 'undefined') {
+          setError('Razorpay SDK failed to load. Please refresh and try again.');
+          setLoading(false);
+          return;
+        }
+
+        const options = {
+          key: razorpay_key_id,
+          amount,
+          currency,
+          name: 'Olinbuy Storefront',
+          description: `Order #${orderId}`,
+          order_id: razorpay_order_id,
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.phone,
+          },
+          theme: {
+            color: '#059669',
+          },
+          handler: async function (response: any) {
+            try {
+              await verifyRazorpayPayment(
+                orderId,
+                response.razorpay_payment_id,
+                response.razorpay_order_id,
+                response.razorpay_signature
+              );
+              clearCart();
+              router.push(`/order-success?order_id=${orderId}&method=RAZORPAY`);
+            } catch (verifyErr: any) {
+              console.error('Razorpay verification error:', verifyErr);
+              setError(verifyErr.message || 'Payment verification failed');
+              setLoading(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+            },
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+        return;
+      }
+
+      clearCart();
       router.push(`/order-success?order_id=${orderId}&method=${paymentMethod}`);
     } catch (err: any) {
       console.error('Checkout error:', err);
@@ -302,6 +387,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#f4f4f4] py-8 px-4 md:px-8">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <div className="max-w-5xl mx-auto">
         {/* Back Link */}
         <Link
@@ -546,41 +632,62 @@ export default function CheckoutPage() {
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Cash on Delivery option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('COD')}
-                  className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'COD'
-                    ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                >
-                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
-                    <Gift className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800">Cash on Delivery (COD)</h4>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Pay in cash when package arrives</p>
-                  </div>
-                </button>
+                {isDomestic ? (
+                  <>
+                    {/* Razorpay Online Payment Option */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('RAZORPAY')}
+                      className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'RAZORPAY'
+                        ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                    >
+                      <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center">
+                        <Smartphone className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-800">Razorpay (UPI / NetBanking / Cards)</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Instant online payment for India</p>
+                      </div>
+                    </button>
 
-                {/* Credit Card / Stripe Option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('STRIPE')}
-                  className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'STRIPE'
-                    ? 'border-blue-500 bg-blue-50/50 shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                >
-                  <div className="w-10 h-10 bg-blue-50 text-[#1a3a6b] rounded-full flex items-center justify-center">
-                    <CreditCard className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800">Stripe Secure Payment</h4>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Pay with credit/debit card safely</p>
-                  </div>
-                </button>
+                    {/* Cash on Delivery option */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('COD')}
+                      className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'COD'
+                        ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                    >
+                      <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-full flex items-center justify-center">
+                        <Gift className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-800">Cash on Delivery (COD)</h4>
+                        <p className="text-[10px] text-slate-400 mt-0.5">Pay in cash when package arrives</p>
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('STRIPE')}
+                    className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'STRIPE'
+                      ? 'border-blue-500 bg-blue-50/50 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                  >
+                    <div className="w-10 h-10 bg-blue-50 text-[#1a3a6b] rounded-full flex items-center justify-center">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">Stripe International Payment</h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Pay with global credit/debit cards</p>
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
           </div>
