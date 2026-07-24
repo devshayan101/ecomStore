@@ -341,7 +341,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
               <button
                 onClick={() => {
-                  addToCart(product, resolvedVariant?._id);
+                  addToCart(product, 1, resolvedVariant?._id);
                 }}
                 className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white py-3.5 rounded-xl text-sm font-bold tracking-wider transition-all duration-200 shadow-md cursor-pointer active:scale-[0.98] select-none"
               >
