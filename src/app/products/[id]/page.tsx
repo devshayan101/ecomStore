@@ -34,10 +34,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
-  // Lightbox Zoom State
+  // Lightbox State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [zoomScale, setZoomScale] = useState(1);
-  const [panPos, setPanPos] = useState({ x: 50, y: 50 });
 
   // Review Form State
   const [rating, setRating] = useState(5);
@@ -197,12 +195,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     router.push(`/?search=${encodeURIComponent(value)}`);
   };
 
-  const handleLightboxMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
-    setPanPos({ x, y });
-  };
+
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#f4f4f4]">
@@ -662,60 +655,31 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {/* Cart Drawer */}
       <CartDrawer />
 
-      {/* Full Image Zoom Lightbox Overlay */}
+      {/* Full Image Lightbox Overlay */}
       {isLightboxOpen && activeImage && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out] select-none">
+        <div 
+          onClick={() => setIsLightboxOpen(false)}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out] select-none cursor-pointer"
+        >
           {/* Close button */}
           <button
-            onClick={() => {
-              setIsLightboxOpen(false);
-              setZoomScale(1);
-            }}
+            onClick={() => setIsLightboxOpen(false)}
             className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white rounded-full p-2.5 cursor-pointer transition-all hover:scale-105 z-10"
             aria-label="Close Fullscreen View"
           >
             <X className="w-6 h-6" />
           </button>
 
-          {/* Zoom Instructions / Controls */}
-          <div className="absolute top-6 left-6 text-white/70 text-xs font-bold flex gap-4 items-center animate-[fadeIn_0.2s_ease-out]">
-            <span>🔍 Hover / Move to Magnify</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setZoomScale(prev => (prev === 1 ? 2.5 : 1));
-              }}
-              className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-[10px] uppercase font-black tracking-wider"
-            >
-              {zoomScale === 1 ? 'Zoom In (2.5x)' : 'Zoom Out'}
-            </button>
+          {/* Image Container */}
+          <div className="relative w-full max-w-4xl h-[70vh] flex items-center justify-center pointer-events-none">
+            <img
+              src={activeImage}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain"
+            />
           </div>
 
-          {/* Image Container with Hover Zoom */}
-          <div
-            className="relative w-full max-w-4xl h-[70vh] bg-transparent overflow-hidden rounded-2xl flex items-center justify-center cursor-zoom-out"
-            onMouseMove={handleLightboxMouseMove}
-            onClick={() => {
-              setIsLightboxOpen(false);
-              setZoomScale(1);
-            }}
-          >
-            <div
-              className="w-full h-full transition-transform duration-75 ease-out flex items-center justify-center"
-              style={{
-                transform: zoomScale > 1 || isLightboxOpen ? `scale(${zoomScale === 1 ? 1.5 : zoomScale})` : 'scale(1)',
-                transformOrigin: `${panPos.x}% ${panPos.y}%`,
-              }}
-            >
-              <img
-                src={activeImage}
-                alt={product.name}
-                className="max-w-full max-h-full object-contain pointer-events-none"
-              />
-            </div>
-          </div>
-
-          {/* Thumbnail strip in Zoom view */}
+          {/* Thumbnail strip in Fullscreen view */}
           {allImages.length > 1 && (
             <div className="absolute bottom-6 flex gap-2 overflow-x-auto no-scrollbar max-w-[90vw] py-2 bg-black/40 px-4 rounded-xl border border-white/10">
               {allImages.map((img, i) => (
@@ -730,7 +694,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     activeImage === img ? 'border-blue-500 scale-95' : 'border-white/20 hover:border-white/40'
                   }`}
                 >
-                  <img src={img} alt={`Zoom thumbnail ${i}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`Fullscreen thumbnail ${i}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
