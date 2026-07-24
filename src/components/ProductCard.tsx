@@ -3,14 +3,14 @@
 import React from 'react';
 import { Star, ShoppingCart, Package } from 'lucide-react';
 import { Product } from '@/lib/api';
+import Link from 'next/link';
 
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
-  onOpenDetails: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onAddToCart, onOpenDetails }: ProductCardProps) {
+export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const variant = product.variants[0];
   const price = variant?.price || 0;
   const mrp = variant?.attributes?.mrp || price;
@@ -31,8 +31,8 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails }: Pro
   return (
     <div className="bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-blue-200 shadow-sm hover:shadow-[0_8px_24px_rgba(30,77,158,0.12)] transition-all duration-300 flex flex-col group relative">
       {/* Clickable Card Body */}
-      <div 
-        onClick={() => onOpenDetails(product)}
+      <Link 
+        href={`/products/${product._id}`}
         className="cursor-pointer flex-1 flex flex-col"
       >
         {/* Product Image Box */}
@@ -76,7 +76,7 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails }: Pro
 
           {/* Ratings */}
           <div className="flex items-center gap-1.5 mb-2">
-            <div className="bg-[#26a541] text-white text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 select-none">
+            <div className="bg-[#26a541] text-[#fff] text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 select-none">
               <Star className="w-2.5 h-2.5 fill-white stroke-none" />
               {rating.toFixed(1)}
             </div>
@@ -102,7 +102,7 @@ export default function ProductCard({ product, onAddToCart, onOpenDetails }: Pro
             )}
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Actions (Not inside the clickable body) */}
       <div className="p-3.5 pt-0">
