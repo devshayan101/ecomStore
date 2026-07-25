@@ -1,6 +1,6 @@
 # Olinbuy Storefront — Modern Next.js E-Commerce
 
-Olinbuy is a modern, high-fidelity, and responsive e-commerce storefront built with Next.js, React, and Tailwind CSS. It is fully integrated with a Hono & MongoDB backend to support product browsing, category filtering, a persistent sliding shopping cart, and a complete checkout workflow supporting both **Stripe** and **Cash on Delivery (COD)**.
+Olinbuy is a modern, high-fidelity, and responsive e-commerce storefront built with Next.js, React, and Tailwind CSS. It is fully integrated with a Hono & MongoDB backend to support product browsing, category filtering, a persistent sliding shopping cart, and a complete checkout workflow supporting **Razorpay (domestic)**, **Stripe (international)**, and **Cash on Delivery (COD)**.
 
 ## 🚀 Key Features
 
@@ -10,8 +10,8 @@ Olinbuy is a modern, high-fidelity, and responsive e-commerce storefront built w
 *   **Standardized Checkout Cycle**: A multi-mode checkout page accepting recipient shipping details and offering immediate options for:
     *   **Active Shipping Zone Filtering**: Country and state dropdown choices are dynamically constrained to destinations covered by active admin Shipping Zones.
     *   **Custom Delivery Estimates**: Displays configured custom delivery time ranges for rate options.
-    *   **Cash on Delivery (COD)**: Instantly logs orders into the administration database and locks inventory, bypassing Stripe creation.
-    *   **Credit Card (Stripe)**: Generates secure Stripe PaymentIntents and returns transaction secrets.
+    *   **Cash on Delivery (COD)**: Instantly logs orders into the administration database and locks inventory, bypassing online gateway creation. Eligible only for domestic destinations.
+    *   **Online Gateways (Razorpay & Stripe)**: Automatically dynamically routes payments: domestic India orders use Razorpay's Modal overlay, while international orders securely launch Stripe Elements.
 *   **Professional Assets**: Standardized SVG layouts powered by Lucide icons in place of default browser emojis.
 
 ---
@@ -78,6 +78,7 @@ storefront/
 │   │   ├── layout.tsx          # Font loading (Poppins & Nunito) + Context Provider wrapper
 │   │   ├── page.tsx            # Main landing shop page
 │   │   ├── checkout/           # Shipping collection & payment mode toggle page
+│   │   ├── products/[id]/      # Dedicated product details and review page
 │   │   └── order-success/      # Successful order details page
 │   ├── components/
 │   │   ├── Navbar.tsx          # Responsive search & cart header
