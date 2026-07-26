@@ -39,7 +39,11 @@ function SuccessContent() {
         <div className="flex justify-between border-b border-slate-100 pb-2">
           <span className="text-slate-400 font-semibold">Payment Option:</span>
           <span className="font-bold text-slate-800">
-            {method === 'COD' ? 'Cash on Delivery (COD)' : 'Credit Card (Stripe)'}
+            {method === 'COD'
+              ? 'Cash on Delivery (COD)'
+              : method === 'RAZORPAY'
+              ? 'Online Payment (Razorpay)'
+              : 'Credit Card (Stripe)'}
           </span>
         </div>
         <div className="flex justify-between pb-1">
@@ -57,6 +61,13 @@ function SuccessContent() {
             <Landmark className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <p>
               Please keep the exact cash amount ready for the delivery rider when your package arrives. Free delivery is guaranteed!
+            </p>
+          </div>
+        ) : method === 'RAZORPAY' ? (
+          <div className="flex gap-2.5 bg-emerald-50 border border-emerald-100 text-emerald-800 p-3.5 rounded-lg font-semibold items-start text-left">
+            <Landmark className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <p>
+              Your Razorpay transaction is verified and complete. We will process and ship your package within 1-3 business days.
             </p>
           </div>
         ) : (
