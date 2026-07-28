@@ -3,8 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
-const SLIDES = [
+interface HeroSlideItem {
+  id?: string;
+  tag: string;
+  title: string;
+  titleHighlight?: string;
+  subtitle: string;
+  bg: string;
+  badge?: string;
+  badgeText?: string;
+  emoji?: string;
+  buttonText: string;
+  category: string;
+}
+
+const DEFAULT_SLIDES: HeroSlideItem[] = [
   {
+    id: 'hero-1',
     tag: '✦ New Arrivals 2026',
     title: 'Glowing Skin,',
     titleHighlight: 'Confident You',
@@ -17,6 +32,7 @@ const SLIDES = [
     category: 'skincare'
   },
   {
+    id: 'hero-2',
     tag: '💄 Beauty Collection',
     title: 'Bold Looks,',
     titleHighlight: 'Real You',
@@ -29,6 +45,7 @@ const SLIDES = [
     category: 'cosmetics'
   },
   {
+    id: 'hero-3',
     tag: '👗 Fashion 2026',
     title: 'Dress to',
     titleHighlight: 'Impress',
@@ -41,6 +58,7 @@ const SLIDES = [
     category: 'women'
   },
   {
+    id: 'hero-4',
     tag: '📦 Wholesale Program',
     title: 'Grow Your',
     titleHighlight: 'Business',
@@ -55,32 +73,35 @@ const SLIDES = [
 ];
 
 interface HeroCarouselProps {
+  slides?: HeroSlideItem[];
   onSelectCategory: (category: string) => void;
 }
 
-export default function HeroCarousel({ onSelectCategory }: HeroCarouselProps) {
+export default function HeroCarousel({ slides, onSelectCategory }: HeroCarouselProps) {
+  const activeSlides = (slides && slides.length > 0) ? slides : DEFAULT_SLIDES;
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
+    if (activeSlides.length === 0) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % SLIDES.length);
+      setCurrent((prev) => (prev + 1) % activeSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [activeSlides.length]);
 
   const handlePrev = () => {
-    setCurrent((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+    setCurrent((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
 
   const handleNext = () => {
-    setCurrent((prev) => (prev + 1) % SLIDES.length);
+    setCurrent((prev) => (prev + 1) % activeSlides.length);
   };
 
   return (
     <section className="relative w-full h-[240px] md:h-[320px] rounded-2xl overflow-hidden shadow-xl mb-6 group">
-      {SLIDES.map((slide, idx) => (
+      {activeSlides.map((slide, idx) => (
         <div
-          key={idx}
+          key={slide.id || idx}
           style={{ background: slide.bg }}
           className={`absolute inset-0 flex items-center justify-between px-6 md:px-16 transition-opacity duration-700 ease-in-out ${
             idx === current ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -93,7 +114,7 @@ export default function HeroCarousel({ onSelectCategory }: HeroCarouselProps) {
             </span>
             <h2 className="font-heading text-xl md:text-4xl font-extrabold leading-tight tracking-tight mb-2 select-none">
               {slide.title} <br className="hidden md:inline" />
-              <span className="text-[#fde68a]">{slide.titleHighlight}</span>
+              {slide.titleHighlight && <span className="text-[#fde68a]">{slide.titleHighlight}</span>}
             </h2>
             <p className="text-[11px] md:text-sm text-white/80 line-clamp-2 md:line-clamp-none max-w-lg mb-4 select-none">
               {slide.subtitle}
@@ -117,19 +138,25 @@ export default function HeroCarousel({ onSelectCategory }: HeroCarouselProps) {
           </div>
 
           {/* Floating Badge */}
-          <div className="absolute top-4 right-4 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 border border-amber-300 rounded-full w-16 h-16 md:w-20 md:h-20 flex flex-col items-center justify-center text-center shadow-lg select-none z-10 hidden sm:flex animate-pulse">
-            <span className="font-heading text-base md:text-xl font-black text-slate-950 block leading-none">
-              {slide.badge}
-            </span>
-            <span className="text-[7px] md:text-[8px] text-slate-950 tracking-wider uppercase font-black mt-0.5 block leading-none">
-              {slide.badgeText}
-            </span>
-          </div>
+          {slide.badge && (
+            <div className="absolute top-4 right-4 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 border border-amber-300 rounded-full w-16 h-16 md:w-20 md:h-20 flex flex-col items-center justify-center text-center shadow-lg select-none z-10 hidden sm:flex animate-pulse">
+              <span className="font-heading text-base md:text-xl font-black text-slate-950 block leading-none">
+                {slide.badge}
+              </span>
+              {slide.badgeText && (
+                <span className="text-[7px] md:text-[8px] text-slate-950 tracking-wider uppercase font-black mt-0.5 block leading-none">
+                  {slide.badgeText}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Large Background Decorative Icon */}
-          <span className="absolute bottom-2 right-8 text-[90px] md:text-[140px] opacity-15 pointer-events-none select-none select-none z-0">
-            {slide.emoji}
-          </span>
+          {slide.emoji && (
+            <span className="absolute bottom-2 right-8 text-[90px] md:text-[140px] opacity-15 pointer-events-none select-none z-0">
+              {slide.emoji}
+            </span>
+          )}
         </div>
       ))}
 
@@ -151,7 +178,7 @@ export default function HeroCarousel({ onSelectCategory }: HeroCarouselProps) {
 
       {/* Slide Indicators Dots */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-        {SLIDES.map((_, idx) => (
+        {activeSlides.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrent(idx)}

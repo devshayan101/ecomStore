@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   fetchCategories,
   fetchProducts,
+  fetchStorefrontSettings,
   Category,
   Product
 } from '@/lib/api';
@@ -59,6 +60,8 @@ export default function Home() {
   const { addToCart } = useCart();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [heroSlides, setHeroSlides] = useState<any[]>([]);
+  const [promotionCards, setPromotionCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -74,6 +77,18 @@ export default function Home() {
         setSearchTerm(search);
       }
     }
+  }, []);
+
+  // Load storefront settings (hero slides & promo cards)
+  useEffect(() => {
+    fetchStorefrontSettings()
+      .then((settings) => {
+        if (settings?.content) {
+          if (settings.content.heroSlides) setHeroSlides(settings.content.heroSlides);
+          if (settings.content.promotionCards) setPromotionCards(settings.content.promotionCards);
+        }
+      })
+      .catch((err) => console.error('Error fetching storefront settings:', err));
   }, []);
 
   // Load categories
@@ -248,7 +263,7 @@ export default function Home() {
 
         {/* Hero Banner Carousel (Only show on all products) */}
         {selectedCategory === 'all' && !searchTerm && (
-          <HeroCarousel onSelectCategory={handleSelectCategory} />
+          <HeroCarousel slides={heroSlides} onSelectCategory={handleSelectCategory} />
         )}
 
         {/* Trust Badges */}
@@ -256,7 +271,7 @@ export default function Home() {
 
         {/* Category Promotion Cards Grid */}
         {selectedCategory === 'all' && !searchTerm && (
-          <PromotionGrid onSelectCategory={handleSelectCategory} />
+          <PromotionGrid cards={promotionCards} onSelectCategory={handleSelectCategory} />
         )}
 
         {/* Products Grid Header */}

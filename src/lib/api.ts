@@ -182,6 +182,10 @@ export interface StorefrontSettings {
   general?: {
     currency: string;
   };
+  content?: {
+    heroSlides: any[];
+    promotionCards: any[];
+  };
 }
 
 export async function fetchStorefrontSettings(): Promise<StorefrontSettings> {
