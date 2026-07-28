@@ -100,23 +100,18 @@ export default function HeroCarousel({ onSelectCategory }: HeroCarouselProps) {
             </p>
             <div className="flex gap-2.5">
               <button
-                onClick={() => {
-                  onSelectCategory(slide.category);
-                  document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => onSelectCategory(slide.category)}
                 className="bg-white text-slate-900 font-bold hover:shadow-lg transition-shadow text-[10px] md:text-xs px-4 py-2 rounded-lg cursor-pointer"
               >
                 {slide.buttonText} →
               </button>
               {slide.category === 'wholesale' && (
-                <a
-                  href="https://wa.me/919690914734?text=Hello%2C%20I%20am%20interested%20in%20your%20wholesale%20program."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-[#25D366] hover:bg-[#1da854] text-white font-bold hover:shadow-lg transition-all text-[10px] md:text-xs px-4 py-2 rounded-lg cursor-pointer flex items-center gap-1.5"
+                <button
+                  onClick={() => onSelectCategory(slide.category)}
+                  className="bg-[#c9a84c] text-slate-900 font-bold hover:shadow-lg transition-shadow text-[10px] md:text-xs px-4 py-2 rounded-lg cursor-pointer"
                 >
-                  <span className="text-sm">💬</span> WhatsApp
-                </a>
+                  Wholesale Info
+                </button>
               )}
             </div>
           </div>

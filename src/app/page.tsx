@@ -127,6 +127,11 @@ export default function Home() {
 
   const handleSelectCategory = (slug: string) => {
     setSelectedCategory(slug);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+    });
   };
 
   return (

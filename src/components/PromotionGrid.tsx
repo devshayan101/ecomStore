@@ -73,13 +73,7 @@ export default function PromotionGrid({ onSelectCategory }: PromotionGridProps) 
           {/* Action Button */}
           <div className="z-10 mt-auto">
             <button
-              onClick={() => {
-                onSelectCategory(card.category);
-                requestAnimationFrame(() => {
-                  document.getElementById('products-section')
-                    ?.scrollIntoView({ behavior: 'smooth' });
-                });
-              }}
+              onClick={() => onSelectCategory(card.category)}
               className={`${card.btnClass} font-bold text-xs px-4 py-2 rounded-lg cursor-pointer transition-colors`}
             >
               {card.btnText}
