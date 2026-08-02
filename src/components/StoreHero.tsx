@@ -14,6 +14,12 @@ interface HeroSlide {
   bg?: string;
   buttonText?: string;
   category?: string;
+  titleColor?: string;
+  titleHighlightColor?: string;
+  subtitleColor?: string;
+  buttonTextColor?: string;
+  buttonBgColor?: string;
+  titleHighlight?: string;
 }
 
 interface StoreHeroProps {
@@ -97,16 +103,31 @@ export default function StoreHero({ slides = DEFAULT_SLIDES }: StoreHeroProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-gray-100/90 via-black/30 to-black/50 sm:to-transparent" />
               <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 w-full h-full flex items-start pt-10 sm:pt-16">
                 <div className="max-w-lg sm:max-w-xl flex flex-col gap-2 sm:gap-4 text-white sm:text-gray-900">
-                  <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight drop-shadow">
+                  <h1 
+                    className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight drop-shadow"
+                    style={slide.titleColor ? { color: slide.titleColor } : undefined}
+                  >
                     {slide.title}
+                    {slide.titleHighlight && (
+                      <span style={slide.titleHighlightColor ? { color: slide.titleHighlightColor } : undefined}>
+                        {" "}{slide.titleHighlight}
+                      </span>
+                    )}
                   </h1>
-                  <p className="text-xs sm:text-base font-medium opacity-90 sm:opacity-100 text-gray-100 sm:text-gray-700">
+                  <p 
+                    className="text-xs sm:text-base font-medium opacity-90 sm:opacity-100 text-gray-100 sm:text-gray-700"
+                    style={slide.subtitleColor ? { color: slide.subtitleColor } : undefined}
+                  >
                     {slide.subtitle}
                   </p>
                   <div className="flex gap-3 mt-2 sm:mt-4">
                     <a
                       href={slide.ctaLink || (slide.category ? `#products-section` : '#products-section')}
                       className="bg-[#FFD814] text-black font-bold text-xs sm:text-sm px-5 py-2.5 sm:px-8 sm:py-3 rounded shadow hover:bg-[#FFD814]/90 transition-colors"
+                      style={{
+                        ...(slide.buttonTextColor ? { color: slide.buttonTextColor } : {}),
+                        ...(slide.buttonBgColor ? { backgroundColor: slide.buttonBgColor } : {}),
+                      }}
                     >
                       {slide.buttonText || slide.ctaText || 'Shop Now'}
                     </a>

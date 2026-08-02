@@ -15,6 +15,10 @@ export interface PromoCardItem {
   category?: string;
   image?: string;
   bgClass?: string;
+  titleColor?: string;
+  descColor?: string;
+  btnTextColor?: string;
+  btnBgColor?: string;
 }
 
 interface StoreFeatureGridProps {
@@ -94,7 +98,12 @@ export default function StoreFeatureGrid({
             key={promo.id || idx}
             className="bg-white p-5 flex flex-col h-[340px] sm:h-[400px] shadow-sm rounded-xl border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
           >
-            <h3 className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 truncate">{promo.title}</h3>
+            <h3 
+              className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 truncate"
+              style={promo.titleColor ? { color: promo.titleColor } : undefined}
+            >
+              {promo.title}
+            </h3>
             <div
               onClick={() => onSelectCategory(targetCategory)}
               className="flex-grow bg-cover bg-center mb-3 rounded-lg cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 relative overflow-hidden shadow-inner"
@@ -108,7 +117,12 @@ export default function StoreFeatureGrid({
             </div>
             <button
               onClick={() => onSelectCategory(targetCategory)}
-              className="text-xs sm:text-sm text-[#0058be] hover:text-[#B91C1C] hover:underline font-bold text-left flex items-center gap-1.5"
+              className="text-xs sm:text-sm text-[#0058be] hover:text-[#B91C1C] hover:underline font-bold text-left flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all w-fit cursor-pointer"
+              style={{
+                borderColor: promo.btnBgColor || 'transparent',
+                backgroundColor: promo.btnBgColor || 'transparent',
+                color: promo.btnTextColor || (promo.btnBgColor ? '#ffffff' : '#0058be'),
+              }}
             >
               {buttonLabel} <ArrowRight className="w-4 h-4" />
             </button>
