@@ -26,6 +26,7 @@ export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
+  const [promotionCards, setPromotionCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -44,8 +45,9 @@ export default function Home() {
   useEffect(() => {
     fetchStorefrontSettings()
       .then((settings) => {
-        if (settings?.content?.heroSlides) {
-          setHeroSlides(settings.content.heroSlides);
+        if (settings?.content) {
+          if (settings.content.heroSlides) setHeroSlides(settings.content.heroSlides);
+          if (settings.content.promotionCards) setPromotionCards(settings.content.promotionCards);
         }
       })
       .catch((err) => console.error('Error fetching settings:', err));
@@ -104,7 +106,11 @@ export default function Home() {
         <StoreHero slides={heroSlides} />
 
         {/* Feature Grid Spotlight */}
-        <StoreFeatureGrid categories={categories} onSelectCategory={handleSelectCategory} />
+        <StoreFeatureGrid
+          categories={categories}
+          promotionCards={promotionCards}
+          onSelectCategory={handleSelectCategory}
+        />
 
         {/* Value Props Bar */}
         <StoreValueProps />
