@@ -16,7 +16,6 @@ import StoreDealsScroller from '@/components/StoreDealsScroller';
 import StoreTrendingScroller from '@/components/StoreTrendingScroller';
 import StoreFooter from '@/components/StoreFooter';
 import ProductCard from '@/components/ProductCard';
-import ProductDetailsModal from '@/components/ProductDetailsModal';
 import CartDrawer from '@/components/CartDrawer';
 import { useCart } from '@/lib/CartContext';
 import { Loader2 } from 'lucide-react';
@@ -30,7 +29,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currencySymbol, setCurrencySymbol] = useState('₹');
 
   // Sync search param from URL if redirected
@@ -121,10 +119,10 @@ export default function Home() {
         <StoreValueProps />
 
         {/* Today's Deals Scroller */}
-        <StoreDealsScroller products={products} onSelectProduct={setSelectedProduct} currencySymbol={currencySymbol} />
+        <StoreDealsScroller products={products} currencySymbol={currencySymbol} />
 
         {/* Trending Items Scroller */}
-        <StoreTrendingScroller products={products} onSelectProduct={setSelectedProduct} currencySymbol={currencySymbol} />
+        <StoreTrendingScroller products={products} currencySymbol={currencySymbol} />
 
         {/* Full Products Section Grid */}
         <section id="products-section" className="max-w-7xl mx-auto px-4 sm:px-6 my-8">
@@ -184,14 +182,6 @@ export default function Home() {
 
       {/* Cart Side Drawer */}
       <CartDrawer />
-
-      {/* Product Details Modal */}
-      <ProductDetailsModal
-        product={selectedProduct}
-        isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        onAddToCart={(prod, vId) => addToCart(prod, 1, vId)}
-      />
     </div>
   );
 }

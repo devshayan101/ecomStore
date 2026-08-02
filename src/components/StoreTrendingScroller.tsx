@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
 import { Product } from '@/lib/api';
 import { Star } from 'lucide-react';
+import Link from 'next/link';
 
 interface StoreTrendingScrollerProps {
   products: Product[];
-  onSelectProduct: (product: Product) => void;
+  onSelectProduct?: (product: Product) => void;
   currencySymbol?: string;
 }
 
@@ -31,9 +31,9 @@ export default function StoreTrendingScroller({ products, onSelectProduct, curre
               const mainImage = prod.images?.[0] || prod.variants?.[0]?.image || 'https://via.placeholder.com/300';
 
               return (
-                <div
+                <Link
                   key={`trending-${prod._id || index}-${index}`}
-                  onClick={() => onSelectProduct(prod)}
+                  href={`/products/${prod._id}`}
                   className="min-w-[150px] max-w-[170px] sm:min-w-[170px] flex flex-col gap-2 group cursor-pointer"
                 >
                   <div className="aspect-[3/4] flex items-center justify-center bg-gray-50 rounded overflow-hidden p-2">
@@ -60,7 +60,7 @@ export default function StoreTrendingScroller({ products, onSelectProduct, curre
                   <p className="font-bold text-sm sm:text-base text-gray-900">
                     {currencySymbol}{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
-                </div>
+                </Link>
               );
             })}
           </div>

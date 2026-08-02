@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
 import { Product } from '@/lib/api';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import Link from 'next/link';
 
 interface StoreDealsScrollerProps {
   products: Product[];
-  onSelectProduct: (product: Product) => void;
+  onSelectProduct?: (product: Product) => void;
   currencySymbol?: string;
 }
 
@@ -40,44 +40,41 @@ export default function StoreDealsScroller({ products, onSelectProduct, currency
                return (
                 <div
                   key={`deal-${prod._id || index}-${index}`}
-                  className="min-w-[180px] max-w-[210px] sm:min-w-[210px] flex flex-col gap-2 group cursor-pointer border border-gray-100 p-2.5 rounded hover:shadow-md transition-shadow"
+                  className="min-w-[180px] max-w-[210px] sm:min-w-[210px] flex flex-col gap-2 group border border-gray-100 p-2.5 rounded hover:shadow-md transition-shadow"
                 >
-                  <div
-                    onClick={() => onSelectProduct(prod)}
-                    className="bg-gray-50 aspect-square flex items-center justify-center p-2 rounded overflow-hidden relative"
-                  >
-                    <img
-                      src={mainImage}
-                      alt={prod.name}
-                      className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
+                  <Link href={`/products/${prod._id}`} className="flex flex-col gap-2 flex-1">
+                    <div className="bg-gray-50 aspect-square flex items-center justify-center p-2 rounded overflow-hidden relative">
+                      <img
+                        src={mainImage}
+                        alt={prod.name}
+                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
 
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className="bg-[#B91C1C] text-white px-1.5 py-0.5 font-bold text-[10px] rounded-sm">
-                      {discountPercent}% Off
-                    </span>
-                    <span className="text-[#B91C1C] font-bold text-[10px]">Top Deal</span>
-                  </div>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="bg-[#B91C1C] text-white px-1.5 py-0.5 font-bold text-[10px] rounded-sm">
+                        {discountPercent}% Off
+                      </span>
+                      <span className="text-[#B91C1C] font-bold text-[10px]">Top Deal</span>
+                    </div>
 
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-base sm:text-lg font-bold text-gray-900">{currencySymbol}{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    <span className="text-xs text-gray-400 line-through">{currencySymbol}{Number(originalPrice).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                  </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-base sm:text-lg font-bold text-gray-900">{currencySymbol}{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="text-xs text-gray-400 line-through">{currencySymbol}{Number(originalPrice).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
 
-                  <p
-                    onClick={() => onSelectProduct(prod)}
-                    className="text-xs text-gray-700 font-medium line-clamp-2 group-hover:text-[#0058be]"
-                  >
-                    {prod.name}
-                  </p>
+                    <p className="text-xs text-gray-700 font-medium line-clamp-2 group-hover:text-[#0058be]">
+                      {prod.name}
+                    </p>
+                  </Link>
 
                   <button
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       addToCart(prod, 1);
                     }}
-                    className="mt-auto w-full bg-[#FFA41C] hover:bg-[#FFA41C]/90 text-black py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+                    className="mt-auto w-full bg-[#FFA41C] hover:bg-[#FFA41C]/90 text-black py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
                   </button>
