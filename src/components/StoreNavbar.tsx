@@ -11,7 +11,9 @@ import {
   X,
   User,
   Package,
-  Sparkles
+  Sparkles,
+  Flame,
+  ChevronDown
 } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { Category } from '@/lib/api';
@@ -37,46 +39,53 @@ export default function StoreNavbar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#131b2e] text-white shadow-md">
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white shadow-xl border-b border-slate-700/50">
       {/* Main Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 md:gap-6">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3 md:gap-6">
         {/* Left Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded transition-colors"
+            className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
             aria-label="Toggle navigation"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X className="w-6 h-6 text-amber-400" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          <Link href="/" className="flex items-center gap-1.5 group select-none">
-            <div className="w-8 h-8 rounded bg-[#FFA41C] text-black font-black flex items-center justify-center text-base tracking-tighter shadow-sm">
+          <Link href="/" className="flex items-center gap-2 group select-none">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 font-black flex items-center justify-center text-lg tracking-tighter shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
               O
             </div>
-            <span className="text-xl md:text-2xl font-black text-white tracking-tight">
-              Olin<span className="text-[#FFD814]">buy</span>
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl md:text-2xl font-black text-white tracking-tight leading-none">
+                Olin<span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">buy</span>
+              </span>
+              <span className="text-[9px] font-mono tracking-widest text-slate-400 uppercase flex items-center gap-1 mt-0.5">
+                <Flame className="w-2.5 h-2.5 text-amber-400" /> OFFICIAL STORE
+              </span>
+            </div>
           </Link>
         </div>
 
         {/* Location Picker (Desktop) */}
-        <button className="hidden lg:flex items-center gap-1 text-white/90 hover:bg-white/10 p-2 transition-colors rounded text-left shrink-0">
-          <MapPin className="w-5 h-5 text-[#FFD814]" />
-          <div className="flex flex-col leading-none">
-            <span className="text-[11px] text-white/70">Deliver to</span>
-            <span className="text-xs font-semibold">Select Location</span>
+        <button className="hidden lg:flex items-center gap-2 text-slate-200 hover:bg-slate-800/80 px-3 py-2 transition-all rounded-xl border border-slate-700/40 hover:border-amber-400/40 shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-amber-400/10 flex items-center justify-center">
+            <MapPin className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="flex flex-col leading-none text-left">
+            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Deliver to</span>
+            <span className="text-xs font-semibold text-white mt-0.5">Select Location</span>
           </div>
         </button>
 
-        {/* Search Bar (Desktop) */}
-        <div className="hidden md:flex flex-1 max-w-2xl bg-white rounded overflow-hidden h-10 group focus-within:ring-2 focus-within:ring-[#FFD814]">
+        {/* Pill-Style Modern Search Bar (Desktop) */}
+        <div className="hidden md:flex flex-1 max-w-2xl bg-slate-900/90 rounded-full border border-slate-700/80 p-1 group focus-within:border-amber-400/80 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all shadow-inner">
           <select
             value={selectedCategory}
             onChange={(e) => onSelectCategory(e.target.value)}
-            className="bg-gray-100 border-r border-gray-200 text-xs px-3 focus:outline-none cursor-pointer text-gray-700 font-medium max-w-[140px] truncate"
+            className="bg-slate-800 text-slate-200 text-xs px-3.5 py-1.5 rounded-full border-none focus:outline-none cursor-pointer font-medium max-w-[150px] truncate hover:bg-slate-700 transition-colors"
           >
-            <option value="all">All Departments</option>
+            <option value="all">All Categories</option>
             {categories.map((cat) => (
               <option key={cat._id} value={cat.slug}>
                 {cat.name}
@@ -85,144 +94,156 @@ export default function StoreNavbar({
           </select>
           <input
             type="text"
-            placeholder="Search Olinbuy"
+            placeholder="Search products, brands, gear..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="flex-1 px-3 text-sm text-gray-900 focus:outline-none placeholder-gray-400"
+            className="flex-1 px-4 text-xs text-white bg-transparent focus:outline-none placeholder-slate-400 font-sans"
           />
           <button
             aria-label="Search"
-            className="bg-[#FFD814] px-4 flex items-center justify-center hover:bg-[#FFD814]/90 transition-colors"
+            className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-5 py-1.5 rounded-full flex items-center justify-center font-bold hover:brightness-110 shadow-sm transition-all"
           >
-            <Search className="w-5 h-5 text-black" />
+            <Search className="w-4 h-4" />
           </button>
         </div>
 
         {/* Right Actions Cluster */}
-        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Mobile Search Toggle */}
           <button
             onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            className="md:hidden p-2 text-white/90 hover:bg-white/10 rounded transition-colors"
+            className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
             aria-label="Search"
           >
             <Search className="w-5 h-5" />
           </button>
 
-          {/* Account */}
+          {/* User Account Button */}
           {session?.user ? (
             <Link
               href="/profile"
-              className="text-white hover:bg-white/10 p-1.5 sm:p-2 transition-colors rounded flex flex-col items-start leading-none"
+              className="flex items-center gap-2 bg-slate-800/60 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl transition-all border border-slate-700/60 hover:border-slate-600 cursor-pointer"
             >
-              <span className="text-[10px] text-white/70">Hello, {session.user.name?.split(' ')[0]}</span>
-              <span className="text-xs font-semibold hidden sm:inline">Account & Lists</span>
+              <div className="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-400 font-mono flex items-center justify-center text-xs font-bold">
+                {session.user.name?.[0] || 'U'}
+              </div>
+              <div className="hidden sm:flex flex-col text-left leading-none">
+                <span className="text-[10px] text-slate-400">Welcome</span>
+                <span className="text-xs font-semibold max-w-[90px] truncate mt-0.5">{session.user.name?.split(' ')[0]}</span>
+              </div>
             </Link>
           ) : (
             <Link
               href="/login"
-              className="text-white hover:bg-white/10 p-1.5 sm:p-2 transition-colors rounded flex flex-col items-start leading-none"
+              className="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 hover:border-amber-400/40 cursor-pointer text-xs font-semibold"
             >
-              <span className="text-[10px] text-white/70">Sign in</span>
-              <span className="text-xs font-semibold hidden sm:inline">Account & Lists</span>
+              <User className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">Sign In</span>
             </Link>
           )}
 
-          {/* Orders (Desktop) */}
+          {/* Orders */}
           <Link
             href="/orders"
-            className="hidden sm:flex text-white hover:bg-white/10 p-2 transition-colors rounded flex-col items-start leading-none"
+            className="hidden sm:flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 text-xs font-semibold"
           >
-            <span className="text-[10px] text-white/70">Returns</span>
-            <span className="text-xs font-semibold">& Orders</span>
+            <Package className="w-4 h-4 text-cyan-400" />
+            <span>Orders</span>
           </Link>
 
           {/* Cart Button */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="text-white hover:bg-white/10 p-1.5 sm:p-2 transition-colors rounded flex items-center gap-1 relative"
+            className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all cursor-pointer relative"
             aria-label="View Cart"
           >
             <div className="relative">
-              <ShoppingCart className="w-7 h-7 sm:w-8 sm:h-8" />
+              <ShoppingCart className="w-5 h-5 text-amber-400" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#FFA41C] text-black font-black text-[10px] w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow">
+                <span className="absolute -top-2 -right-2 bg-[#FFA41C] text-black font-black text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md border border-slate-900">
                   {cartCount}
                 </span>
               )}
             </div>
-            <span className="text-xs font-bold hidden sm:inline mb-0.5">Cart</span>
+            <span className="text-xs font-bold hidden sm:inline text-white">Cart</span>
           </button>
         </div>
       </div>
 
       {/* Mobile Search Expandable Bar */}
       {isMobileSearchOpen && (
-        <div className="md:hidden px-4 pb-3 pt-1 border-t border-white/10">
-          <div className="flex bg-white rounded overflow-hidden h-9">
+        <div className="md:hidden px-4 pb-3 pt-1 border-t border-slate-800">
+          <div className="flex bg-slate-900 rounded-full border border-slate-700 overflow-hidden h-9 p-0.5">
             <input
               type="text"
               placeholder="Search Olinbuy..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="flex-1 px-3 text-sm text-gray-900 focus:outline-none"
+              className="flex-1 px-3 text-xs text-white bg-transparent focus:outline-none"
             />
-            <button className="bg-[#FFD814] px-3.5 flex items-center justify-center">
-              <Search className="w-4 h-4 text-black" />
+            <button className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-3.5 rounded-full flex items-center justify-center font-bold">
+              <Search className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Sub Nav Category Bar */}
-      <nav className="bg-[#232f3e] px-4 flex items-center h-10 gap-3 overflow-x-auto no-scrollbar text-xs font-medium text-white/80">
+      {/* Sub Nav Category Bar (Glassmorphism Dark) */}
+      <nav className="bg-slate-950/60 backdrop-blur-md px-4 sm:px-6 flex items-center h-11 gap-3 border-t border-slate-800/80 overflow-x-auto no-scrollbar text-xs font-medium">
         <button
           onClick={() => onSelectCategory('all')}
-          className={`flex items-center gap-1 font-bold whitespace-nowrap shrink-0 ${
-            selectedCategory === 'all' ? 'text-[#FFD814] border-b-2 border-[#FFD814] pb-0.5' : 'hover:text-white'
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-full transition-all whitespace-nowrap shrink-0 ${
+            selectedCategory === 'all'
+              ? 'bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20'
+              : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" /> All Products
         </button>
-        {categories.map((cat) => (
-          <button
-            key={cat._id}
-            onClick={() => onSelectCategory(cat.slug)}
-            className={`whitespace-nowrap shrink-0 transition-colors ${
-              selectedCategory === cat.slug
-                ? 'text-[#FFD814] font-bold border-b-2 border-[#FFD814] pb-0.5'
-                : 'hover:text-white'
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
+        {categories.map((cat) => {
+          const isSelected = selectedCategory === cat.slug;
+          return (
+            <button
+              key={cat._id}
+              onClick={() => onSelectCategory(cat.slug)}
+              className={`px-3 py-1 rounded-full transition-all whitespace-nowrap shrink-0 ${
+                isSelected
+                  ? 'bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+              }`}
+            >
+              {cat.name}
+            </button>
+          );
+        })}
       </nav>
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#131b2e] border-t border-white/10 px-4 py-4 space-y-3 animate-in slide-in-from-top-2">
-          <div className="text-xs font-bold text-[#FFD814] uppercase tracking-wider">Quick Navigation</div>
-          <div className="grid grid-cols-2 gap-2 text-sm text-white/90">
+        <div className="md:hidden bg-[#0f172a] border-t border-slate-800 px-4 py-4 space-y-3 animate-in slide-in-from-top-2">
+          <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">Navigation Menu</div>
+          <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-200">
             <button
               onClick={() => { onSelectCategory('all'); setIsMobileMenuOpen(false); }}
-              className="text-left py-1.5 px-2 rounded hover:bg-white/10"
+              className="text-left py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
             >
-              🛍️ All Categories
+              <Sparkles className="w-4 h-4 text-amber-400" /> All Products
             </button>
+
             <Link
               href="/orders"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="py-1.5 px-2 rounded hover:bg-white/10 flex items-center gap-1.5"
+              className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
             >
-              <Package className="w-4 h-4 text-[#FFD814]" /> Orders
+              <Package className="w-4 h-4 text-cyan-400" /> Orders
             </Link>
+
             <Link
               href="/profile"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="py-1.5 px-2 rounded hover:bg-white/10 flex items-center gap-1.5"
+              className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
             >
-              <User className="w-4 h-4 text-[#FFD814]" /> Profile
+              <User className="w-4 h-4 text-amber-400" /> Profile
             </Link>
           </div>
         </div>
@@ -230,3 +251,4 @@ export default function StoreNavbar({
     </header>
   );
 }
+
