@@ -101,6 +101,9 @@ function HomeContent() {
       params.delete('search');
     }
     router.replace(`/?${params.toString()}`);
+    requestAnimationFrame(() => {
+      document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+    });
   };
 
   const handleSelectCategory = (slug: string) => {
