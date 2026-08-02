@@ -171,6 +171,7 @@ export default function Home() {
                   key={product._id}
                   product={product}
                   onAddToCart={(p) => addToCart(p, 1)}
+                  currencySymbol={currencySymbol}
                 />
               ))}
             </div>
