@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), monospace;
 }
 
 @keyframes marqueeBar {
@@ -10,20 +11,48 @@
   to { transform: translateX(-50%); }
 }
 
-@keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; filter: blur(20px); }
+  50% { opacity: 0.8; filter: blur(35px); }
 }
 
 .animate-marquee {
   display: inline-flex;
   gap: 3rem;
-  animation: marqueeBar 22s linear infinite;
+  animation: marqueeBar 25s linear infinite;
   white-space: nowrap;
 }
 
-.animate-slideIn {
-  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.animate-float {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: rgba(18, 18, 24, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(26, 26, 36, 0.85);
+  border-color: rgba(204, 255, 0, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px -10px rgba(204, 255, 0, 0.15);
 }
 
 /* Custom scrollbar hiding for horizontal category strip */

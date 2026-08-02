@@ -1,24 +1,30 @@
 import type { Metadata } from 'next';
-import { Nunito, Poppins } from 'next/font/google';
+import { Outfit, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/CartContext';
 import SessionProvider from '@/components/SessionProvider';
 
-const nunito = Nunito({
+const outfit = Outfit({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-nunito',
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-heading',
 });
 
-const poppins = Poppins({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-poppins',
+  variable: '--font-mono',
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans',
 });
 
 export const metadata: Metadata = {
-  title: "Olinbuy — India's Best Fashion & Skincare Store",
-  description: "Shop premium skincare, cosmetics, men's & women's fashion with free delivery across India.",
+  title: "Olinbuy — Techwear & Streetwear Drops",
+  description: "Next-gen streetwear, limited techwear drops, and lifestyle aesthetics.",
 };
 
 export default function RootLayout({
@@ -27,8 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${nunito.variable} ${poppins.variable} font-sans antialiased text-[#212121] bg-[#f4f4f4]`}>
+    <html lang="en" className="scroll-smooth dark">
+      <body className={`${outfit.variable} ${jetbrainsMono.variable} ${jakarta.variable} font-sans antialiased text-white bg-[#09090B] selection:bg-[#CCFF00] selection:text-black`}>
         <SessionProvider>
           <CartProvider>
             {children}

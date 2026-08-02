@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Star, ShoppingCart, Package } from 'lucide-react';
+import { Star, ShoppingCart, Zap, Package, Eye } from 'lucide-react';
 import { Product } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface ProductCardProps {
@@ -11,92 +12,102 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const router = RouterHook();
   const variant = product.variants[0];
   const price = variant?.price || 0;
   const mrp = variant?.attributes?.mrp || price;
-  const imageUrl = product.images?.[0] || variant?.image || null;
+  const imageUrl = product.images?.[0] || variant?.image || '';
+  const secondaryImageUrl = product.images?.[1] || imageUrl || '';
   const discount = mrp > price ? Math.round((1 - price / mrp) * 100) : 0;
 
-  // Find badge (excluding olinbuy tag)
+  // Find badge
   const badge = product.tags.find((tag) => tag !== 'olinbuy') || '';
 
-  // Use real ratings if present, otherwise default to a consistent mock rating
   const rating = product.rating_average !== undefined && product.rating_count && product.rating_count > 0
     ? product.rating_average
-    : 4.0 + (product.name.length % 5) * 0.2;
+    : 4.5 + (product.name.length % 4) * 0.1;
   const reviews = product.rating_count !== undefined && product.rating_count > 0
     ? product.rating_count
-    : 12 + (product.name.length % 8) * 11;
+    : 18 + (product.name.length % 9) * 14;
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onAddToCart(product);
+    router.push('/checkout');
+  };
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-blue-200 shadow-sm hover:shadow-[0_8px_24px_rgba(30,77,158,0.12)] transition-all duration-300 flex flex-col group relative">
-      {/* Clickable Card Body */}
+    <div className="glass-panel glass-panel-hover rounded-2xl overflow-hidden flex flex-col group relative border border-white/10 bg-[#121218]/80">
+      {/* Clickable Card Link */}
       <Link 
         href={`/products/${product._id}`}
         className="cursor-pointer flex-1 flex flex-col"
       >
-        {/* Product Image Box */}
-        <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden border-b border-slate-100 w-full">
+        {/* Product Image Container with Secondary Image Reveal on Hover */}
+        <div className="relative aspect-square bg-black/40 overflow-hidden w-full border-b border-white/5 group">
           {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+            <>
+              <img
+                src={imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+              />
+              <img
+                src={secondaryImageUrl}
+                alt={`${product.name} view`}
+                className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
+              />
+            </>
           ) : (
-            <div className="flex flex-col items-center justify-center w-full h-full text-slate-300 select-none">
+            <div className="flex flex-col items-center justify-center w-full h-full text-zinc-600 select-none">
               <Package className="w-12 h-12 stroke-[1.5]" />
             </div>
           )}
 
-          {/* Dynamic Badge */}
+          {/* Dynamic Streetwear Badge */}
           {badge && (
-            <span className={`absolute top-2.5 left-2.5 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm text-white ${
-              badge === 'wholesale' ? 'bg-[#26a541]' :
-              badge === 'hot' ? 'bg-[#ff6161]' :
-              badge === 'sale' ? 'bg-[#ff9f00]' :
-              badge === 'new' ? 'bg-[#2874f0]' : 'bg-purple-600'
-            }`}>
-              {badge === 'wholesale' ? 'Wholesale' : badge}
+            <span className="absolute top-3 left-3 text-[10px] font-mono font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-lg bg-[#CCFF00] text-black border border-black/20">
+              {badge}
             </span>
           )}
+
+          {/* Quick View Hover Indicator */}
+          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+            <span className="bg-black/80 text-white text-[11px] font-mono font-bold px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-1.5 backdrop-blur-md">
+              <Eye className="w-3.5 h-3.5 text-[#CCFF00]" /> INSPECT DROP
+            </span>
+          </div>
         </div>
 
-        {/* Body Info */}
-        <div className="p-3.5 flex-1 flex flex-col">
-          {/* Category */}
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 block">
-            {badge === 'wholesale' ? 'Wholesale' : product.tags.includes('skincare') ? 'Skincare' : product.tags.includes('cosmetics') ? 'Cosmetics' : product.tags.includes('women') ? 'Women' : 'Men'}
-          </span>
+        {/* Info Area */}
+        <div className="p-4 flex-1 flex flex-col">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-[10px] font-mono text-[#CCFF00] uppercase tracking-wider">
+              {product.tags.includes('techwear') ? '// TECHWEAR' : '// LIMITED DROP'}
+            </span>
+            <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300">
+              <Star className="w-2.5 h-2.5 fill-[#CCFF00] text-none stroke-none" />
+              {rating.toFixed(1)} ({reviews})
+            </div>
+          </div>
 
-          {/* Title */}
-          <h3 className="text-xs md:text-sm font-bold text-slate-800 line-clamp-2 leading-snug flex-1 mb-1.5 select-none">
+          <h3 className="font-heading text-sm md:text-base font-bold text-white line-clamp-2 leading-tight flex-1 mb-2 group-hover:text-[#CCFF00] transition-colors">
             {product.name}
           </h3>
 
-          {/* Ratings */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="bg-[#26a541] text-[#fff] text-[10px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 select-none">
-              <Star className="w-2.5 h-2.5 fill-white stroke-none" />
-              {rating.toFixed(1)}
-            </div>
-            <span className="text-[10px] text-slate-400 font-semibold select-none">
-              ({reviews})
-            </span>
-          </div>
-
           {/* Price Strip */}
-          <div className="flex items-baseline gap-1.5 flex-wrap mb-3.5">
-            <span className="font-heading text-base md:text-lg font-bold text-slate-900 leading-none select-none">
+          <div className="flex items-baseline gap-2 flex-wrap mb-4">
+            <span className="font-mono text-base md:text-lg font-extrabold text-white">
               ₹{price.toLocaleString('en-IN')}
             </span>
             {discount > 0 && (
               <>
-                <span className="text-xs text-slate-400 line-through select-none">
+                <span className="font-mono text-xs text-zinc-500 line-through">
                   ₹{mrp.toLocaleString('en-IN')}
                 </span>
-                <span className="text-[10px] md:text-xs font-black text-[#ff6161] select-none">
-                  {discount}% off
+                <span className="text-[10px] font-mono font-black text-[#CCFF00] bg-[#CCFF00]/10 px-1.5 py-0.5 rounded border border-[#CCFF00]/30">
+                  -{discount}%
                 </span>
               </>
             )}
@@ -104,16 +115,33 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         </div>
       </Link>
 
-      {/* Actions (Not inside the clickable body) */}
-      <div className="p-3.5 pt-0">
+      {/* Dual CTA Actions: Add to Cart + Buy Now */}
+      <div className="p-4 pt-0 grid grid-cols-2 gap-2">
         <button
-          onClick={() => onAddToCart(product)}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-[#1a3a6b] hover:to-[#1e4d9e] hover:text-white border border-[#1a3a6b] text-[#1a3a6b] py-2 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.98]"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddToCart(product);
+          }}
+          className="flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 py-2.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer active:scale-95"
         >
           <ShoppingCart className="w-3.5 h-3.5" />
-          Add to Cart
+          <span>CART</span>
+        </button>
+
+        <button
+          onClick={handleBuyNow}
+          className="flex items-center justify-center gap-1.5 bg-[#CCFF00] hover:bg-[#b8e600] text-black py-2.5 rounded-xl text-xs font-mono font-black tracking-tight transition-all cursor-pointer shadow-[0_0_12px_rgba(204,255,0,0.3)] active:scale-95 hover:scale-[1.02]"
+        >
+          <Zap className="w-3.5 h-3.5 fill-black stroke-none" />
+          <span>BUY NOW</span>
         </button>
       </div>
     </div>
   );
 }
+
+function RouterHook() {
+  return useRouter();
+}
+
