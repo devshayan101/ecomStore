@@ -9,12 +9,14 @@ interface ProductRelatedSectionProps {
   currentProductId: string;
   categoryId?: string;
   onAddToCart: (product: Product) => void;
+  currencySymbol?: string;
 }
 
 export default function ProductRelatedSection({
   currentProductId,
   categoryId,
   onAddToCart,
+  currencySymbol = '₹',
 }: ProductRelatedSectionProps) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,7 @@ export default function ProductRelatedSection({
                       </h3>
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-[#a04100] font-bold text-sm">
-                          ${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          {currencySymbol}{price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </span>
                         <span className="text-[11px] text-slate-500">
                           {mainVariant?.attributes?.material || 'Premium'}

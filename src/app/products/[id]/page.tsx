@@ -11,9 +11,12 @@ import {
   Variant,
   fetchProductById,
   fetchProductReviews,
+  fetchCategories,
+  Category,
+  fetchStorefrontSettings,
 } from '@/lib/api';
 import { useCart } from '@/lib/CartContext';
-import Navbar from '@/components/Navbar';
+import StoreNavbar from '@/components/StoreNavbar';
 import CartDrawer from '@/components/CartDrawer';
 import StoreFooter from '@/components/StoreFooter';
 
@@ -39,6 +42,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [currencySymbol, setCurrencySymbol] = useState('₹');
+
+  // Load categories and settings
+  useEffect(() => {
+    fetchCategories()
+      .then(setCategories)
+      .catch(console.error);
+
+    fetchStorefrontSettings()
+      .then((settings) => {
+        if (settings?.general?.currency) {
+          const sym = settings.general.currency === 'USD' ? '$' : (settings.general.currency === 'EUR' ? '€' : (settings.general.currency === 'GBP' ? '£' : '₹'));
+          setCurrencySymbol(sym);
+        }
+      })
+      .catch((err) => console.error('Error fetching settings:', err));
+  }, []);
 
   // Load product and reviews
   useEffect(() => {
@@ -141,10 +162,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-[#fbfcfd] text-[#1a1c1d] flex flex-col font-sans">
-      <Navbar
+      <StoreNavbar
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
-        onMenuClick={handleMenuClick}
+        categories={categories}
+        selectedCategory=""
+        onSelectCategory={(slug) => {
+          router.push(`/?category=${slug}`);
+        }}
       />
       <CartDrawer />
 
@@ -174,15 +199,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               totalReviews={totalReviews}
               onAddToCart={handleAddToCart}
               onBuyNow={handleBuyNow}
+              currencySymbol={currencySymbol}
             />
           </div>
         </section>
 
         {/* Tabbed Info Section */}
-        <ProductTabbedInfo product={product} />
+        <ProductTabbedInfo product={product} currencySymbol={currencySymbol} />
 
         {/* FAQ Section */}
-        <ProductFAQSection />
+        <ProductFAQSection customFaqs={product.faqs} displayConfig={product.display_configs?.faqs} />
 
         {/* Customer Reviews Section */}
         <ProductReviewsSection
@@ -200,6 +226,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           currentProductId={product._id}
           categoryId={product.category_id}
           onAddToCart={(relProduct) => addToCart(relProduct, 1, relProduct.variants?.[0]?._id)}
+          currencySymbol={currencySymbol}
         />
       </main>
 

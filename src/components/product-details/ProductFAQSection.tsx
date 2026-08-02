@@ -10,30 +10,18 @@ interface FAQItem {
 
 interface ProductFAQSectionProps {
   customFaqs?: FAQItem[];
+  displayConfig?: boolean;
 }
 
-export default function ProductFAQSection({ customFaqs }: ProductFAQSectionProps) {
+export default function ProductFAQSection({ customFaqs, displayConfig = true }: ProductFAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const defaultFaqs: FAQItem[] = [
-    {
-      question: 'How long does the battery last on a single charge?',
-      answer:
-        'Equipped with a high-density graphene battery, it provides up to 45 miles of range under standard operating conditions. Rapid charging allows for 80% capacity in just 30 minutes.',
-    },
-    {
-      question: 'Is it legal to use on city sidewalks and bike lanes?',
-      answer:
-        'Local regulations vary by region. Standard personal transporter speed limits (typically under 15 mph) apply. Please verify local municipal guidelines.',
-    },
-    {
-      question: 'What is the weight capacity and maximum payload?',
-      answer:
-        'The structural frame is tested to safely support dynamic loads up to 300 lbs (136 kg) while maintaining full stability and equilibrium.',
-    },
-  ];
+  // If section display is disabled by admin OR no custom FAQs exist for product, hide section completely as fallback
+  if (!displayConfig || !customFaqs || customFaqs.length === 0) {
+    return null;
+  }
 
-  const faqs = customFaqs && customFaqs.length > 0 ? customFaqs : defaultFaqs;
+  const faqs = customFaqs;
 
   return (
     <section className="mb-14">

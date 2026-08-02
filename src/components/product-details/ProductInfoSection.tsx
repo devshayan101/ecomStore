@@ -12,6 +12,7 @@ interface ProductInfoSectionProps {
   totalReviews: number;
   onAddToCart: () => void;
   onBuyNow: () => void;
+  currencySymbol?: string;
 }
 
 export default function ProductInfoSection({
@@ -22,6 +23,7 @@ export default function ProductInfoSection({
   totalReviews,
   onAddToCart,
   onBuyNow,
+  currencySymbol = '₹',
 }: ProductInfoSectionProps) {
   const currentVariant = selectedVariant || product.variants[0];
   const price = currentVariant?.price ?? 0;
@@ -66,7 +68,7 @@ export default function ProductInfoSection({
       <div className="bg-white border border-[#e2e2e3] p-5 rounded-xl shadow-sm space-y-4">
         <div className="flex items-end gap-3">
           <span className="text-3xl md:text-4xl font-extrabold text-[#1a1c1d] leading-none">
-            ${price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {currencySymbol}{price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
           {discount > 0 && (
             <span className="text-[#ba1a1a] font-bold text-sm bg-red-50 px-2 py-0.5 rounded border border-red-100">
@@ -75,12 +77,12 @@ export default function ProductInfoSection({
           )}
           {mrp > price && (
             <span className="text-slate-400 line-through text-sm">
-              ${mrp.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              {currencySymbol}{mrp.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </span>
           )}
         </div>
         <p className="text-xs text-slate-500">
-          Prices include VAT. Financing available starting at $120/mo.
+          Prices include VAT. Financing available starting at {currencySymbol}{Math.round(price * 0.12)}/mo.
         </p>
 
         {/* Action Buttons */}

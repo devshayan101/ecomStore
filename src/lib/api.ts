@@ -19,12 +19,18 @@ export interface ProductKeyValue {
   value: string;
 }
 
+export interface ProductFaq {
+  question: string;
+  answer: string;
+}
+
 export interface ProductDisplayConfig {
   top_highlights?: boolean;
   about_this_item?: boolean;
   additional_information?: boolean;
   style_details?: boolean;
   features_specs?: boolean;
+  faqs?: boolean;
 }
 
 export interface Product {
@@ -44,6 +50,7 @@ export interface Product {
   additional_information?: ProductKeyValue[];
   style_details?: ProductKeyValue[];
   features_specs?: ProductKeyValue[];
+  faqs?: ProductFaq[];
   display_configs?: ProductDisplayConfig;
   created_at: string;
   updated_at: string;

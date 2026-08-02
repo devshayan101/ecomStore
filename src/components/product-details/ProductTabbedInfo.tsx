@@ -6,9 +6,10 @@ import { Product, fetchShippingRates, ShippingRateOption } from '@/lib/api';
 
 interface ProductTabbedInfoProps {
   product: Product;
+  currencySymbol?: string;
 }
 
-export default function ProductTabbedInfo({ product }: ProductTabbedInfoProps) {
+export default function ProductTabbedInfo({ product, currencySymbol = '₹' }: ProductTabbedInfoProps) {
   // Accordion open/close states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     description: true,
@@ -258,7 +259,7 @@ export default function ProductTabbedInfo({ product }: ProductTabbedInfoProps) {
                         <div className="text-[11px] text-slate-500">{rate.deliveryTime || '2-4 business days'}</div>
                       </div>
                       <div className="font-bold text-sm text-[#a04100]">
-                        {rate.price === 0 ? 'FREE' : `$${rate.price}`}
+                        {rate.price === 0 ? 'FREE' : `${currencySymbol}${rate.price}`}
                       </div>
                     </div>
                   ))}
