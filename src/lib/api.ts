@@ -14,6 +14,19 @@ export interface Variant {
   attributes: Record<string, any>;
 }
 
+export interface ProductKeyValue {
+  key: string;
+  value: string;
+}
+
+export interface ProductDisplayConfig {
+  top_highlights?: boolean;
+  about_this_item?: boolean;
+  additional_information?: boolean;
+  style_details?: boolean;
+  features_specs?: boolean;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -26,6 +39,12 @@ export interface Product {
   tax_slabs?: Array<{ region: string; rate: number }>;
   rating_average?: number;
   rating_count?: number;
+  top_highlights?: ProductKeyValue[];
+  about_this_item?: string[];
+  additional_information?: ProductKeyValue[];
+  style_details?: ProductKeyValue[];
+  features_specs?: ProductKeyValue[];
+  display_configs?: ProductDisplayConfig;
   created_at: string;
   updated_at: string;
 }

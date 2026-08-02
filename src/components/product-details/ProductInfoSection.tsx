@@ -149,6 +149,51 @@ export default function ProductInfoSection({
           </div>
         </div>
       )}
+
+      {/* Top Highlights (Invisible Table with Two Columns) */}
+      {(!product.display_configs || product.display_configs.top_highlights) && product.top_highlights && product.top_highlights.length > 0 && (
+        <div className="pt-4 border-t border-[#e2e2e3] space-y-2.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Top Highlights
+          </h4>
+          <table className="w-full text-sm border-none border-collapse text-[#1a1c1d]">
+            <tbody>
+              {product.top_highlights.map((item, idx) => (
+                <tr key={idx} className="border-none">
+                  <td className="py-1 pr-4 font-bold text-slate-700 w-1/3 align-top border-none">
+                    {item.key}
+                  </td>
+                  <td className="py-1 text-slate-900 border-none">
+                    {item.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* About This Item (Bullet Points) */}
+      {(!product.display_configs || product.display_configs.about_this_item) && (
+        <div className="pt-4 border-t border-[#e2e2e3] space-y-2.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            About This Item
+          </h4>
+          {product.about_this_item && product.about_this_item.length > 0 ? (
+            <ul className="list-disc pl-5 space-y-1.5 text-sm text-slate-700">
+              {product.about_this_item.map((bullet, idx) => (
+                <li key={idx}>
+                  {bullet}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-600 leading-relaxed italic">
+              {product.description || "No description details available."}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
