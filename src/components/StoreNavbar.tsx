@@ -86,8 +86,8 @@ export default function StoreNavbar({
             className="bg-slate-800 text-slate-200 text-xs px-3.5 py-1.5 rounded-full border-none focus:outline-none cursor-pointer font-medium max-w-[150px] truncate hover:bg-slate-700 transition-colors"
           >
             <option value="all">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat._id} value={cat.slug}>
+            {categories.map((cat, idx) => (
+              <option key={`select-cat-${cat._id || cat.slug || idx}-${idx}`} value={cat.slug}>
                 {cat.name}
               </option>
             ))}
@@ -200,11 +200,11 @@ export default function StoreNavbar({
         >
           <Sparkles className="w-3.5 h-3.5" /> All Products
         </button>
-        {categories.map((cat) => {
+        {categories.map((cat, idx) => {
           const isSelected = selectedCategory === cat.slug;
           return (
             <button
-              key={cat._id}
+              key={`pill-cat-${cat._id || cat.slug || idx}-${idx}`}
               onClick={() => onSelectCategory(cat.slug)}
               className={`px-3 py-1 rounded-full transition-all whitespace-nowrap shrink-0 ${
                 isSelected

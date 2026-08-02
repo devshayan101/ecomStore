@@ -39,7 +39,7 @@ export default function StoreDealsScroller({ products, onSelectProduct, currency
 
                return (
                 <div
-                  key={prod._id}
+                  key={`deal-${prod._id || index}-${index}`}
                   className="min-w-[180px] max-w-[210px] sm:min-w-[210px] flex flex-col gap-2 group cursor-pointer border border-gray-100 p-2.5 rounded hover:shadow-md transition-shadow"
                 >
                   <div

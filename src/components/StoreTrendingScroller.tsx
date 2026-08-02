@@ -32,7 +32,7 @@ export default function StoreTrendingScroller({ products, onSelectProduct, curre
 
               return (
                 <div
-                  key={prod._id}
+                  key={`trending-${prod._id || index}-${index}`}
                   onClick={() => onSelectProduct(prod)}
                   className="min-w-[150px] max-w-[170px] sm:min-w-[170px] flex flex-col gap-2 group cursor-pointer"
                 >

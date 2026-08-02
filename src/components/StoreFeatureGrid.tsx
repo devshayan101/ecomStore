@@ -95,7 +95,7 @@ export default function StoreFeatureGrid({
 
         return (
           <div
-            key={promo.id || idx}
+            key={`feature-promo-${promo.id || idx}-${idx}`}
             className="bg-white p-5 flex flex-col h-[340px] sm:h-[400px] shadow-sm rounded-xl border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
           >
             <h3 
