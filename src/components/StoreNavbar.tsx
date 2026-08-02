@@ -37,6 +37,16 @@ export default function StoreNavbar({
   const { data: session } = useSession();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [localSearch, setLocalSearch] = React.useState(searchTerm);
+
+  React.useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearchChange(localSearch);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white shadow-xl border-b border-slate-700/50">
@@ -79,7 +89,10 @@ export default function StoreNavbar({
         </button>
 
         {/* Pill-Style Modern Search Bar (Desktop) */}
-        <div className="hidden md:flex flex-1 max-w-2xl bg-slate-900/90 rounded-full border border-slate-700/80 p-1 group focus-within:border-amber-400/80 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all shadow-inner">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="hidden md:flex flex-1 max-w-2xl bg-slate-900/90 rounded-full border border-slate-700/80 p-1 group focus-within:border-amber-400/80 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all shadow-inner"
+        >
           <select
             value={selectedCategory}
             onChange={(e) => onSelectCategory(e.target.value)}
@@ -95,17 +108,18 @@ export default function StoreNavbar({
           <input
             type="text"
             placeholder="Search products, brands, gear..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             className="flex-1 px-4 text-xs text-white bg-transparent focus:outline-none placeholder-slate-400 font-sans"
           />
           <button
+            type="submit"
             aria-label="Search"
-            className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-5 py-1.5 rounded-full flex items-center justify-center font-bold hover:brightness-110 shadow-sm transition-all"
+            className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-5 py-1.5 rounded-full flex items-center justify-center font-bold hover:brightness-110 shadow-sm transition-all cursor-pointer"
           >
             <Search className="w-4 h-4" />
           </button>
-        </div>
+        </form>
 
         {/* Right Actions Cluster */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -173,18 +187,24 @@ export default function StoreNavbar({
       {/* Mobile Search Expandable Bar */}
       {isMobileSearchOpen && (
         <div className="md:hidden px-4 pb-3 pt-1 border-t border-slate-800">
-          <div className="flex bg-slate-900 rounded-full border border-slate-700 overflow-hidden h-9 p-0.5">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="flex bg-slate-900 rounded-full border border-slate-700 overflow-hidden h-9 p-0.5"
+          >
             <input
               type="text"
               placeholder="Search Olinbuy..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="flex-1 px-3 text-xs text-white bg-transparent focus:outline-none"
             />
-            <button className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-3.5 rounded-full flex items-center justify-center font-bold">
+            <button
+              type="submit"
+              className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-3.5 rounded-full flex items-center justify-center font-bold cursor-pointer"
+            >
               <Search className="w-3.5 h-3.5" />
             </button>
-          </div>
+          </form>
         </div>
       )}
 

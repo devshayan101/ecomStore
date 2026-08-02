@@ -20,25 +20,31 @@ import CartDrawer from '@/components/CartDrawer';
 import { useCart } from '@/lib/CartContext';
 import { Loader2 } from 'lucide-react';
 
-export default function Home() {
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+
+function HomeContent() {
   const { addToCart } = useCart();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const searchQ = searchParams?.get('search') || '';
+  const categoryQ = searchParams?.get('category') || 'all';
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [promotionCards, setPromotionCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [currencySymbol, setCurrencySymbol] = useState('₹');
 
-  // Sync search param from URL if redirected
+  // Local state for search term (bind to input value)
+  const [searchTerm, setSearchTerm] = useState(searchQ);
+
+  // Sync state when URL updates
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const search = params.get('search');
-      if (search) setSearchTerm(search);
-    }
-  }, []);
+    setSearchTerm(searchQ);
+  }, [searchQ]);
 
   // Fetch settings
   useEffect(() => {
@@ -63,16 +69,16 @@ export default function Home() {
       .catch((err) => console.error('Error fetching categories:', err));
   }, []);
 
-  // Fetch products based on category & search
+  // Fetch products based on category & search reactively from URL query params
   useEffect(() => {
     setLoading(true);
     const params: Record<string, string> = {};
-    if (selectedCategory !== 'all') {
-      const cat = categories.find((c) => c.slug === selectedCategory);
+    if (categoryQ !== 'all') {
+      const cat = categories.find((c) => c.slug === categoryQ);
       if (cat) params.category_id = cat._id;
     }
-    if (searchTerm) {
-      params.search = searchTerm;
+    if (searchQ) {
+      params.search = searchQ;
     }
 
     fetchProducts(params)
@@ -84,10 +90,27 @@ export default function Home() {
         console.error('Error fetching products:', err);
         setLoading(false);
       });
-  }, [selectedCategory, searchTerm, categories]);
+  }, [categoryQ, searchQ, categories]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    const params = new URLSearchParams(window.location.search);
+    if (value) {
+      params.set('search', value);
+    } else {
+      params.delete('search');
+    }
+    router.replace(`/?${params.toString()}`);
+  };
 
   const handleSelectCategory = (slug: string) => {
-    setSelectedCategory(slug);
+    const params = new URLSearchParams(window.location.search);
+    if (slug !== 'all') {
+      params.set('category', slug);
+    } else {
+      params.delete('category');
+    }
+    router.push(`/?${params.toString()}`);
     requestAnimationFrame(() => {
       document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
     });
@@ -98,9 +121,9 @@ export default function Home() {
       {/* Header */}
       <StoreNavbar
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         categories={categories}
-        selectedCategory={selectedCategory}
+        selectedCategory={categoryQ}
         onSelectCategory={handleSelectCategory}
       />
 
@@ -129,13 +152,13 @@ export default function Home() {
           <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                {selectedCategory === 'all'
+                {categoryQ === 'all'
                   ? 'All Products'
-                  : categories.find((c) => c.slug === selectedCategory)?.name || 'Products'}
+                  : categories.find((c) => c.slug === categoryQ)?.name || 'Products'}
               </h2>
-              {searchTerm && (
+              {searchQ && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Showing results for &quot;{searchTerm}&quot;
+                  Showing results for &quot;{searchQ}&quot;
                 </p>
               )}
             </div>
@@ -154,8 +177,8 @@ export default function Home() {
               <p className="text-sm font-semibold text-gray-600">No products match your criteria.</p>
               <button
                 onClick={() => {
-                  setSelectedCategory('all');
-                  setSearchTerm('');
+                  handleSelectCategory('all');
+                  handleSearchChange('');
                 }}
                 className="mt-4 bg-[#FFD814] text-black px-4 py-2 rounded text-xs font-bold shadow hover:bg-[#FFD814]/90"
               >
@@ -183,5 +206,17 @@ export default function Home() {
       {/* Cart Side Drawer */}
       <CartDrawer />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f7f9fb] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#ff6b00]" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
