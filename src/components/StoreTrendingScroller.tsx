@@ -7,9 +7,10 @@ import { Star } from 'lucide-react';
 interface StoreTrendingScrollerProps {
   products: Product[];
   onSelectProduct: (product: Product) => void;
+  currencySymbol?: string;
 }
 
-export default function StoreTrendingScroller({ products, onSelectProduct }: StoreTrendingScrollerProps) {
+export default function StoreTrendingScroller({ products, onSelectProduct, currencySymbol = '₹' }: StoreTrendingScrollerProps) {
   const trendingProducts = products.length > 0 ? products.slice(0, 10) : [];
 
   return (
@@ -56,7 +57,9 @@ export default function StoreTrendingScroller({ products, onSelectProduct }: Sto
                     <span className="text-[#0058be] ml-1 text-[10px]">({reviewCount})</span>
                   </div>
 
-                  <p className="font-bold text-sm sm:text-base text-gray-900">${price.toFixed(2)}</p>
+                  <p className="font-bold text-sm sm:text-base text-gray-900">
+                    {currencySymbol}{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
                 </div>
               );
             })}

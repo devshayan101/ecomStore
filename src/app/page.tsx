@@ -31,6 +31,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [currencySymbol, setCurrencySymbol] = useState('₹');
 
   // Sync search param from URL if redirected
   useEffect(() => {
@@ -45,6 +46,10 @@ export default function Home() {
   useEffect(() => {
     fetchStorefrontSettings()
       .then((settings) => {
+        if (settings?.general?.currency) {
+          const sym = settings.general.currency === 'USD' ? '$' : (settings.general.currency === 'EUR' ? '€' : (settings.general.currency === 'GBP' ? '£' : '₹'));
+          setCurrencySymbol(sym);
+        }
         if (settings?.content) {
           if (settings.content.heroSlides) setHeroSlides(settings.content.heroSlides);
           if (settings.content.promotionCards) setPromotionCards(settings.content.promotionCards);
@@ -116,10 +121,10 @@ export default function Home() {
         <StoreValueProps />
 
         {/* Today's Deals Scroller */}
-        <StoreDealsScroller products={products} onSelectProduct={setSelectedProduct} />
+        <StoreDealsScroller products={products} onSelectProduct={setSelectedProduct} currencySymbol={currencySymbol} />
 
         {/* Trending Items Scroller */}
-        <StoreTrendingScroller products={products} onSelectProduct={setSelectedProduct} />
+        <StoreTrendingScroller products={products} onSelectProduct={setSelectedProduct} currencySymbol={currencySymbol} />
 
         {/* Full Products Section Grid */}
         <section id="products-section" className="max-w-7xl mx-auto px-4 sm:px-6 my-8">

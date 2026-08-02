@@ -8,9 +8,10 @@ import { useCart } from '@/lib/CartContext';
 interface StoreDealsScrollerProps {
   products: Product[];
   onSelectProduct: (product: Product) => void;
+  currencySymbol?: string;
 }
 
-export default function StoreDealsScroller({ products, onSelectProduct }: StoreDealsScrollerProps) {
+export default function StoreDealsScroller({ products, onSelectProduct, currencySymbol = '₹' }: StoreDealsScrollerProps) {
   const { addToCart } = useCart();
   const dealProducts = products.length > 0 ? products.slice(0, 8) : [];
 
@@ -31,12 +32,12 @@ export default function StoreDealsScroller({ products, onSelectProduct }: StoreD
         ) : (
           <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-3 no-scrollbar scroll-smooth">
             {dealProducts.map((prod, index) => {
-              const price = prod.variants?.[0]?.price || 0;
-              const discountPercent = Math.floor(15 + (index * 5) % 30);
-              const originalPrice = (price * (1 + discountPercent / 100)).toFixed(2);
-              const mainImage = prod.images?.[0] || prod.variants?.[0]?.image || 'https://via.placeholder.com/300';
+               const price = prod.variants?.[0]?.price || 0;
+               const discountPercent = Math.floor(15 + (index * 5) % 30);
+               const originalPrice = (price * (1 + discountPercent / 100)).toFixed(2);
+               const mainImage = prod.images?.[0] || prod.variants?.[0]?.image || 'https://via.placeholder.com/300';
 
-              return (
+               return (
                 <div
                   key={prod._id}
                   className="min-w-[180px] max-w-[210px] sm:min-w-[210px] flex flex-col gap-2 group cursor-pointer border border-gray-100 p-2.5 rounded hover:shadow-md transition-shadow"
@@ -60,8 +61,8 @@ export default function StoreDealsScroller({ products, onSelectProduct }: StoreD
                   </div>
 
                   <div className="flex items-baseline gap-2">
-                    <span className="text-base sm:text-lg font-bold text-gray-900">${price.toFixed(2)}</span>
-                    <span className="text-xs text-gray-400 line-through">${originalPrice}</span>
+                    <span className="text-base sm:text-lg font-bold text-gray-900">{currencySymbol}{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="text-xs text-gray-400 line-through">{currencySymbol}{Number(originalPrice).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
 
                   <p
