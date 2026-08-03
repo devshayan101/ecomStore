@@ -89,43 +89,88 @@ export default function StoreFeatureGrid({
   return (
     <section className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 -mt-12 sm:-mt-36 lg:-mt-44 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {displayPromos.map((promo, idx) => {
-        const bgImage = promo.image || (promo as any).bg || DEFAULT_PROMO_CARDS[idx % DEFAULT_PROMO_CARDS.length].image;
+        const bgImage = promo.image || (promo as any).bg;
         const targetCategory = promo.category || 'all';
         const buttonLabel = promo.btnText || (promo as any).buttonText || `Shop ${promo.title}`;
+        
+        // Define fallback gradient colors matching original setup
+        const bgGradientClass = promo.bgClass || (
+          idx % 4 === 0 ? 'bg-gradient-to-br from-[#0c4a30] via-[#0f5c3c] to-[#062e1e]' :
+          idx % 4 === 1 ? 'bg-gradient-to-br from-[#881337] via-[#a21caf] to-[#4c0519]' :
+          idx % 4 === 2 ? 'bg-gradient-to-br from-[#0369a1] via-[#0284c7] to-[#0c4a6e]' :
+          'bg-gradient-to-br from-[#78350f] via-[#b45309] to-[#451a03]'
+        );
 
         return (
           <div
             key={`feature-promo-${promo.id || idx}-${idx}`}
-            className="bg-white p-5 flex flex-col h-[340px] sm:h-[400px] shadow-sm rounded-xl border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+            onClick={() => onSelectCategory(targetCategory)}
+            className={`relative group overflow-hidden rounded-2xl h-[360px] sm:h-[400px] shadow-md border border-white/5 transition-all duration-500 hover:shadow-xl hover:shadow-[#0058be]/10 flex flex-col justify-end p-6 cursor-pointer select-none ${!bgImage ? bgGradientClass : ''}`}
           >
-            <h3 
-              className="text-base sm:text-lg font-extrabold text-gray-900 mb-3 truncate"
-              style={promo.titleColor ? { color: promo.titleColor } : undefined}
-            >
-              {promo.title}
-            </h3>
-            <div
-              onClick={() => onSelectCategory(targetCategory)}
-              className="flex-grow bg-cover bg-center mb-3 rounded-lg cursor-pointer group-hover:scale-[1.01] transition-transform duration-300 relative overflow-hidden shadow-inner"
-              style={{ backgroundImage: `url('${bgImage}')` }}
-            >
-              {promo.tag && (
-                <span className="absolute top-2.5 left-2.5 bg-[#0058be] text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow">
-                  {promo.tag}
-                </span>
-              )}
+            {/* Background Image with Zoom */}
+            {bgImage && (
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+                style={{ backgroundImage: `url('${bgImage}')` }}
+              />
+            )}
+
+            {/* Floating blurred glowing orbs for fallback mesh gradients */}
+            {!bgImage && (
+              <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50 mix-blend-screen">
+                <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-white/10 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+                <div className="absolute top-1/3 right-4 w-36 h-36 rounded-full bg-[#ff00ea]/10 blur-2xl animate-pulse" style={{ animationDuration: '6s' }} />
+                <div className="absolute -bottom-8 left-1/4 w-44 h-44 rounded-full bg-white/15 blur-3xl animate-pulse" style={{ animationDuration: '10s' }} />
+              </div>
+            )}
+
+            {/* Dark & tinted gradient overlay for premium look & text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5 z-10" />
+
+            {/* Content (Tag, Title, Button) */}
+            <div className="relative z-20 flex flex-col h-full justify-between pointer-events-none">
+              {/* Top Section - Tag */}
+              <div>
+                {promo.tag && (
+                  <span className="inline-block bg-white/10 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-sm border border-white/10">
+                    {promo.tag}
+                  </span>
+                )}
+              </div>
+
+              {/* Bottom Section - Title, Desc, and Button */}
+              <div className="space-y-3">
+                <div>
+                  <h3 
+                    className="text-base sm:text-lg font-extrabold text-white leading-tight tracking-tight drop-shadow-sm font-heading"
+                    style={promo.titleColor ? { color: promo.titleColor } : undefined}
+                  >
+                    {promo.title}
+                  </h3>
+                  {promo.desc && (
+                    <p 
+                      className="text-xs text-white/80 mt-1 font-medium leading-relaxed max-w-[90%]"
+                      style={promo.descColor ? { color: promo.descColor } : undefined}
+                    >
+                      {promo.desc}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-1">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold shadow-sm bg-white/15 hover:bg-white/25 border border-white/20 text-white transition-all duration-300 transform group-hover:translate-x-1"
+                    style={{
+                      borderColor: promo.btnBgColor ? promo.btnBgColor : 'rgba(255,255,255,0.2)',
+                      backgroundColor: promo.btnBgColor ? promo.btnBgColor : 'rgba(255,255,255,0.1)',
+                      color: promo.btnTextColor || '#ffffff',
+                    }}
+                  >
+                    {buttonLabel} <ArrowRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => onSelectCategory(targetCategory)}
-              className="text-xs sm:text-sm text-[#0058be] hover:text-[#B91C1C] hover:underline font-bold text-left flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all w-fit cursor-pointer"
-              style={{
-                borderColor: promo.btnBgColor || 'transparent',
-                backgroundColor: promo.btnBgColor || 'transparent',
-                color: promo.btnTextColor || (promo.btnBgColor ? '#ffffff' : '#0058be'),
-              }}
-            >
-              {buttonLabel} <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         );
       })}
