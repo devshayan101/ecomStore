@@ -5,7 +5,7 @@ Olinbuy is a modern, high-fidelity, and responsive e-commerce storefront built w
 ## 🚀 Key Features
 
 *   **Premium Visual Experience**: Rich UI styling using Tailwind CSS v4, smooth slide-in/fade animations, and clean, high-contrast layouts.
-*   **Intuitive Product Catalog**: Features a hero promotions carousel, real-time search, category filtering strip, trust badges, and special wholesale deals.
+*   **Intuitive Product Catalog**: Features a hero promotions carousel, dynamic product variation selectors grouped by category (supporting visual circular color swatches and text chips), real-time search, category filtering strip, trust badges, and special wholesale deals.
 *   **Modular Cart State**: Client-side state managed via context hooks that persist cart items automatically in the browser's `localStorage`.
 *   **Standardized Checkout Cycle**: A multi-mode checkout page accepting recipient shipping details and offering immediate options for:
     *   **Active Shipping Zone Filtering**: Country and state dropdown choices are dynamically constrained to destinations covered by active admin Shipping Zones.
