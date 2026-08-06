@@ -116,7 +116,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  const resolvedVariant = selectedVariant || product.variants?.[0];
+  const resolvedVariant = selectedVariant || product.variants?.[0] || null;
 
   // Images list
   const productImages = product.images || [];
@@ -140,12 +140,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const handleAddToCart = () => {
     if (product && resolvedVariant) {
       addToCart(product, 1, resolvedVariant._id);
+      return true;
     }
+    return false;
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
-    router.push('/checkout');
+    if (handleAddToCart()) {
+      router.push('/checkout');
+    }
   };
 
   const handleReviewAdded = (newReview: Review) => {
@@ -154,8 +157,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    router.push(`/?search=${encodeURIComponent(value)}`);
+    if (value.trim()) {
+      router.push(`/?search=${encodeURIComponent(value)}`);
+    }
   };
+
   const handleMenuClick = () => {
     router.push('/');
   };
