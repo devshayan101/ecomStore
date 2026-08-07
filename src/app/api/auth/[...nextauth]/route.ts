@@ -1,7 +1,8 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import GitHubProvider from 'next-auth/providers/github';
+import FacebookProvider from 'next-auth/providers/facebook';
+import InstagramProvider from 'next-auth/providers/instagram';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/storefront';
 const STOREFRONT_API_SECRET = process.env.STOREFRONT_API_SECRET || 'fallback-storefront-api-secret-key-123456789';
@@ -55,16 +56,22 @@ export const authOptions: NextAuthOptions = {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET
       })
     ] : []),
-    ...(process.env.GITHUB_ID && process.env.GITHUB_SECRET ? [
-      GitHubProvider({
-        clientId: process.env.GITHUB_ID,
-        clientSecret: process.env.GITHUB_SECRET
+    ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET ? [
+      FacebookProvider({
+        clientId: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET
+      })
+    ] : []),
+    ...(process.env.INSTAGRAM_CLIENT_ID && process.env.INSTAGRAM_CLIENT_SECRET ? [
+      InstagramProvider({
+        clientId: process.env.INSTAGRAM_CLIENT_ID,
+        clientSecret: process.env.INSTAGRAM_CLIENT_SECRET
       })
     ] : [])
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === 'google' || account?.provider === 'github') {
+      if (account?.provider === 'google' || account?.provider === 'facebook' || account?.provider === 'instagram') {
         try {
           const res = await fetch(`${API_BASE}/auth/social`, {
             method: 'POST',

@@ -257,38 +257,48 @@ export default function ProductDetailsModal({
             </div>
 
             {/* Variant Selector */}
-            {product.variants.length > 1 && (
-              <div className="space-y-2 select-none border-t border-slate-100 pt-3">
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Select Option / Variant</span>
-                <div className="flex flex-wrap gap-2">
-                  {product.variants.map((v) => {
-                    const isSelected = resolvedVariant?._id === v._id;
-                    const attrLabel = v.attributes?.variant_name || v.attributes?.variant || Object.entries(v.attributes || {})
-                      .filter(([key]) => key !== 'mrp')
-                      .map(([key, val]) => `${key}: ${val}`)
-                      .join(', ') || `SKU: ${v.sku}`;
+            {(() => {
+              const availableVariants = (product.variants || []).filter((v) => {
+                if (!v) return false;
+                const stock = (v as any).stock ?? v.attributes?.stock ?? 1;
+                return Number(stock) > 0;
+              });
 
-                    return (
-                      <button
-                        key={v._id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedVariant(v);
-                          setActiveImage(v.image || product.images?.[0] || null);
-                        }}
-                        className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all text-left flex flex-col justify-between cursor-pointer ${isSelected
-                            ? 'border-blue-600 bg-blue-50 text-blue-800 shadow-sm'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white'
-                          }`}
-                      >
-                        <span>{attrLabel}</span>
-                        <span className="text-[10px] font-semibold text-slate-400 mt-1">₹{v.price.toLocaleString('en-IN')}</span>
-                      </button>
-                    );
-                  })}
+              if (availableVariants.length <= 1) return null;
+
+              return (
+                <div className="space-y-2 select-none border-t border-slate-100 pt-3">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Select Option / Variant</span>
+                  <div className="flex flex-wrap gap-2">
+                    {availableVariants.map((v) => {
+                      const isSelected = resolvedVariant?._id === v._id;
+                      const attrLabel = v.attributes?.variant_name || v.attributes?.variant || Object.entries(v.attributes || {})
+                        .filter(([key]) => key !== 'mrp')
+                        .map(([key, val]) => `${key}: ${val}`)
+                        .join(', ') || `SKU: ${v.sku}`;
+
+                      return (
+                        <button
+                          key={v._id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedVariant(v);
+                            setActiveImage(v.image || product.images?.[0] || null);
+                          }}
+                          className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all text-left flex flex-col justify-between cursor-pointer ${isSelected
+                              ? 'border-blue-600 bg-blue-50 text-blue-800 shadow-sm'
+                              : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white'
+                            }`}
+                        >
+                          <span>{attrLabel}</span>
+                          <span className="text-[10px] font-semibold text-slate-400 mt-1">₹{v.price.toLocaleString('en-IN')}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div className="text-xs text-slate-500 leading-relaxed space-y-2">
               <p className="font-extrabold text-slate-700 uppercase tracking-widest text-[9px]">Description</p>

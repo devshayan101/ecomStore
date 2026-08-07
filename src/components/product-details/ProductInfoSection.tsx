@@ -25,7 +25,16 @@ export default function ProductInfoSection({
   onBuyNow,
   currencySymbol = '₹',
 }: ProductInfoSectionProps) {
-  const currentVariant = selectedVariant || product.variants[0];
+  // Filter variants to only include defined & available ones (stock > 0)
+  const availableVariants = React.useMemo(() => {
+    return (product.variants || []).filter((v) => {
+      if (!v) return false;
+      const stock = (v as any).stock ?? v.attributes?.stock ?? 1; // default to available if stock property is omitted
+      return Number(stock) > 0;
+    });
+  }, [product.variants]);
+
+  const currentVariant = selectedVariant || availableVariants[0] || product.variants?.[0];
   const price = currentVariant?.price ?? 0;
   const mrp = currentVariant?.attributes?.mrp ?? price;
   const discount = mrp > price ? Math.round((1 - price / mrp) * 100) : 0;
@@ -40,9 +49,9 @@ export default function ProductInfoSection({
       return product.variation_categories;
     }
     return Array.from(new Set(
-      product.variants.flatMap(v => Object.keys(v.attributes || {}))
+      availableVariants.flatMap(v => Object.keys(v.attributes || {}))
     )).filter(k => k !== 'mrp' && k !== 'colorHex' && k !== 'low_stock_threshold' && k !== 'stock');
-  }, [product]);
+  }, [product, availableVariants]);
 
   // Local selection combination state
   const [localSelection, setLocalSelection] = React.useState<Record<string, string>>({});
@@ -57,24 +66,24 @@ export default function ProductInfoSection({
     }
   }, [currentVariant?._id, variationCategories]);
 
-  // Group unique option values for each category
+  // Group unique option values for each category from available variants only
   const categoryOptions = React.useMemo(() => {
     const options: Record<string, string[]> = {};
     variationCategories.forEach(cat => {
-      const vals = product.variants.map(v => String(v.attributes?.[cat] || '')).filter(Boolean);
+      const vals = availableVariants.map(v => String(v.attributes?.[cat] || '')).filter(Boolean);
       options[cat] = Array.from(new Set(vals));
     });
     return options;
-  }, [product.variants, variationCategories]);
+  }, [availableVariants, variationCategories]);
 
-  // Match local selection to a variant
+  // Match local selection to an available variant
   const matchedVariant = React.useMemo(() => {
-    return product.variants.find(v => {
+    return availableVariants.find(v => {
       return variationCategories.every(cat => {
         return String(v.attributes?.[cat] || '') === (localSelection[cat] || '');
       });
     });
-  }, [product.variants, variationCategories, localSelection]);
+  }, [availableVariants, variationCategories, localSelection]);
 
   const isCombinationAvailable = !!matchedVariant;
 

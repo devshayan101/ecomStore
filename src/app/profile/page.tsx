@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { User, Phone, MapPin, Loader2, Save, ArrowLeft, ArrowRight, UserCheck } from 'lucide-react';
+import { User, Phone, MapPin, Loader2, Save, ArrowLeft, ArrowRight, UserCheck, LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/storefront';
@@ -185,6 +185,14 @@ export default function ProfilePage() {
               {phone && <p>📞 {phone}</p>}
               {address.city && <p>📍 {address.city}, {address.state}</p>}
             </div>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="w-full mt-2 flex items-center justify-center gap-2 border border-white/20 hover:bg-rose-500/10 hover:border-rose-500/30 text-white hover:text-rose-400 py-2 rounded-xl text-xs font-black transition-all cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
           </div>
 
           {/* Form Content */}
