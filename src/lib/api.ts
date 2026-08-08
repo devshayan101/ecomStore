@@ -320,3 +320,54 @@ export async function getReviewImageUploadUrl(
   }
   return res.json();
 }
+
+export async function fetchWishlist(token: string): Promise<{ productIds: string[]; products: Product[] }> {
+  const res = await fetch(`${API_BASE}/wishlist`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    throw new Error('Failed to fetch wishlist');
+  }
+  return res.json();
+}
+
+export async function toggleWishlistApi(productId: string, token: string): Promise<{ productIds: string[] }> {
+  const res = await fetch(`${API_BASE}/wishlist/toggle`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ productId })
+  });
+  if (!res.ok) {
+    throw new Error('Failed to toggle wishlist item');
+  }
+  return res.json();
+}
+
+export async function syncWishlistApi(productIds: string[], token: string): Promise<{ productIds: string[] }> {
+  const res = await fetch(`${API_BASE}/wishlist/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ productIds })
+  });
+  if (!res.ok) {
+    throw new Error('Failed to sync wishlist');
+  }
+  return res.json();
+}
+
+export async function deleteWishlistApi(productId: string, token: string): Promise<{ productIds: string[] }> {
+  const res = await fetch(`${API_BASE}/wishlist/${productId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    throw new Error('Failed to remove wishlist item');
+  }
+  return res.json();
+}

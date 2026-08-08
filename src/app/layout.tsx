@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Outfit, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/CartContext';
+import { WishlistProvider } from '@/lib/WishlistContext';
 import SessionProvider from '@/components/SessionProvider';
 
 const outfit = Outfit({
@@ -36,9 +37,11 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth dark">
       <body className={`${outfit.variable} ${jetbrainsMono.variable} ${jakarta.variable} font-sans antialiased text-white bg-[#09090B] selection:bg-[#CCFF00] selection:text-black`}>
         <SessionProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </WishlistProvider>
         </SessionProvider>
       </body>
     </html>

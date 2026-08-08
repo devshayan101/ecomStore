@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShoppingCart, Search, Menu, X, PhoneCall, User, LogOut, History, UserCog, ChevronDown, Flame } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, PhoneCall, User, LogOut, History, UserCog, ChevronDown, Flame, Heart } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import { useWishlist } from '@/lib/WishlistContext';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 
@@ -14,6 +15,7 @@ interface NavbarProps {
 
 export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: NavbarProps) {
   const { cartCount, setIsCartOpen } = useCart();
+  const { wishlistCount } = useWishlist();
   const { data: session, status } = useSession();
   const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -101,6 +103,14 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
                       <p className="text-xs font-semibold text-white truncate">{session.user.email}</p>
                     </div>
                     <Link
+                      href="/wishlist"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium hover:bg-white/5 hover:text-white transition-colors cursor-pointer text-zinc-300"
+                    >
+                      <Heart className="w-4 h-4 text-rose-400" />
+                      Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+                    </Link>
+                    <Link
                       href="/profile"
                       onClick={() => setIsProfileDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium hover:bg-white/5 hover:text-white transition-colors cursor-pointer text-zinc-300"
@@ -146,6 +156,20 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
             <PhoneCall className="w-3.5 h-3.5" />
             <span>VIP Drop Line</span>
           </a>
+
+          {/* Wishlist Icon Button */}
+          <Link
+            href="/wishlist"
+            className="relative p-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl transition-all border border-white/10 cursor-pointer group"
+            aria-label="Wishlist"
+          >
+            <Heart className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white font-mono font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
 
           {/* Cart Button */}
           <button

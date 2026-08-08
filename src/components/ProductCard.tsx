@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Star, ShoppingCart, Zap, Package, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Zap, Package, Eye, Heart } from 'lucide-react';
 import { Product } from '@/lib/api';
+import { useWishlist } from '@/lib/WishlistContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -14,6 +15,8 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, onAddToCart, currencySymbol = 'â‚¹' }: ProductCardProps) {
   const router = useRouter();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isSaved = isInWishlist(product._id);
   const variant = product.variants[0];
   const price = variant?.price || 0;
   const mrp = variant?.attributes?.mrp || price;
@@ -40,6 +43,20 @@ export default function ProductCard({ product, onAddToCart, currencySymbol = 'â‚
 
   return (
     <div className="bg-white hover:shadow-md hover:border-slate-300 transition-all duration-300 rounded-2xl overflow-hidden flex flex-col group relative border border-[#e2e2e3]">
+      {/* Wishlist Heart Toggle Button */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleWishlist(product);
+        }}
+        className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 border border-slate-100"
+        aria-label={isSaved ? 'Remove from Wishlist' : 'Add to Wishlist'}
+      >
+        <Heart className={`w-4 h-4 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-400 hover:text-rose-500'}`} />
+      </button>
+
       {/* Clickable Card Link */}
       <Link 
         href={`/products/${product._id}`}

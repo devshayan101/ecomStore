@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { Product } from '@/lib/api';
 import { Star, ChevronLeft, ChevronRight, Sparkles, Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import { useWishlist } from '@/lib/WishlistContext';
 import Link from 'next/link';
 
 interface StoreTrendingScrollerProps {
@@ -14,6 +15,7 @@ interface StoreTrendingScrollerProps {
 
 export default function StoreTrendingScroller({ products, onSelectProduct, currencySymbol = '₹' }: StoreTrendingScrollerProps) {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const scrollRef = useRef<HTMLDivElement>(null);
   const trendingProducts = products.length > 0 ? products.slice(0, 10) : [];
 
@@ -78,6 +80,7 @@ export default function StoreTrendingScroller({ products, onSelectProduct, curre
                 // Extract category/tag indicator if exists
                 const tag = prod.tags?.[0] || (index % 2 === 0 ? 'Top Seller' : 'Recommended');
 
+                const isSaved = isInWishlist(prod._id);
                 return (
                   <div 
                     key={`trending-${prod._id || index}-${index}`}
@@ -88,15 +91,18 @@ export default function StoreTrendingScroller({ products, onSelectProduct, curre
                       className="flex flex-col gap-0 cursor-pointer flex-1"
                     >
                       <div className="w-full aspect-[4/5] flex items-center justify-center bg-slate-50 relative border-b border-slate-100 overflow-hidden">
-                        {/* Heart Wishlist Toggle (Visual only) */}
+                        {/* Heart Wishlist Toggle */}
                         <button 
+                          type="button"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            toggleWishlist(prod);
                           }}
                           className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:scale-105 active:scale-95 transition-all duration-200 border border-slate-100 z-10"
+                          aria-label={isSaved ? 'Remove from Wishlist' : 'Add to Wishlist'}
                         >
-                          <Heart className="w-3.5 h-3.5" />
+                          <Heart className={`w-3.5 h-3.5 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-slate-400 hover:text-rose-500'}`} />
                         </button>
 
                         <img

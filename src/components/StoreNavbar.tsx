@@ -13,9 +13,11 @@ import {
   Package,
   Sparkles,
   Flame,
-  ChevronDown
+  ChevronDown,
+  Heart
 } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
+import { useWishlist } from '@/lib/WishlistContext';
 import { Category } from '@/lib/api';
 
 interface StoreNavbarProps {
@@ -34,6 +36,7 @@ export default function StoreNavbar({
   onSelectCategory,
 }: StoreNavbarProps) {
   const { cartCount, setIsCartOpen } = useCart();
+  const { wishlistCount } = useWishlist();
   const { data: session } = useSession();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -156,6 +159,23 @@ export default function StoreNavbar({
             </Link>
           )}
 
+          {/* Wishlist */}
+          <Link
+            href="/wishlist"
+            className="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 text-xs font-semibold relative group"
+            aria-label="Wishlist"
+          >
+            <div className="relative">
+              <Heart className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-rose-500 text-white font-black text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-md">
+                  {wishlistCount}
+                </span>
+              )}
+            </div>
+            <span className="hidden sm:inline">Wishlist</span>
+          </Link>
+
           {/* Orders */}
           <Link
             href="/orders"
@@ -249,6 +269,14 @@ export default function StoreNavbar({
             >
               <Sparkles className="w-4 h-4 text-amber-400" /> All Products
             </button>
+
+            <Link
+              href="/wishlist"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
+            >
+              <Heart className="w-4 h-4 text-rose-400" /> Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+            </Link>
 
             <Link
               href="/orders"

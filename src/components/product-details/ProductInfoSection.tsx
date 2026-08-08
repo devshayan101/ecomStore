@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Star, ShoppingCart, Truck, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { Star, ShoppingCart, Truck, RotateCcw, Check, Sparkles, Heart } from 'lucide-react';
 import { Product, Variant } from '@/lib/api';
+import { useWishlist } from '@/lib/WishlistContext';
 
 interface ProductInfoSectionProps {
   product: Product;
@@ -25,6 +26,8 @@ export default function ProductInfoSection({
   onBuyNow,
   currencySymbol = '₹',
 }: ProductInfoSectionProps) {
+  const { isInWishlist, toggleWishlist } = useWishlist();
+
   // Filter variants to only include defined & available ones (stock > 0)
   const availableVariants = React.useMemo(() => {
     return (product.variants || []).filter((v) => {
@@ -205,6 +208,18 @@ export default function ProductInfoSection({
             className="w-full py-3 bg-[#FFD814] hover:bg-[#FFE354] disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-bold rounded-lg text-base transition-transform active:scale-98 shadow-sm border border-[#e2bf10] cursor-pointer"
           >
             Buy Now
+          </button>
+          <button
+            onClick={() => toggleWishlist(product)}
+            type="button"
+            className={`w-full py-2.5 font-bold rounded-lg text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer border ${
+              isInWishlist(product._id)
+                ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isInWishlist(product._id) ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
+            {isInWishlist(product._id) ? 'Saved in Wishlist' : 'Add to Wishlist'}
           </button>
         </div>
 
