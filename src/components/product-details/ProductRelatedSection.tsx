@@ -70,18 +70,22 @@ export default function ProductRelatedSection({
                   key={prod._id}
                   className="min-w-[280px] w-[280px] bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all border border-[#e2e2e3] shadow-sm flex flex-col group"
                 >
-                  <div className="h-48 bg-[#f5f6f7] relative overflow-hidden">
-                    <img
-                      src={img}
-                      alt={prod.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
+                  <Link href={`/products/${prod._id}`} className="cursor-pointer block">
+                    <div className="h-48 bg-[#f5f6f7] relative overflow-hidden">
+                      <img
+                        src={img}
+                        alt={prod.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </Link>
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-sm text-[#1a1c1d] line-clamp-1 mb-1">
-                        {prod.name}
-                      </h3>
+                      <Link href={`/products/${prod._id}`} className="cursor-pointer block group-hover:text-[#a04100] transition-colors duration-200">
+                        <h3 className="font-bold text-sm text-[#1a1c1d] line-clamp-1 mb-1">
+                          {prod.name}
+                        </h3>
+                      </Link>
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-[#a04100] font-bold text-sm">
                           {currencySymbol}{price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
