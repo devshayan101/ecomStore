@@ -14,6 +14,7 @@ import StoreFeatureGrid from '@/components/StoreFeatureGrid';
 import StoreValueProps from '@/components/StoreValueProps';
 import StoreDealsScroller from '@/components/StoreDealsScroller';
 import StoreTrendingScroller from '@/components/StoreTrendingScroller';
+import StoreProductVideos from '@/components/StoreProductVideos';
 import StoreFooter from '@/components/StoreFooter';
 import ProductCard from '@/components/ProductCard';
 import CartDrawer from '@/components/CartDrawer';
@@ -149,6 +150,14 @@ function HomeContent() {
 
         {/* Trending Items Scroller */}
         <StoreTrendingScroller products={products} currencySymbol={currencySymbol} />
+
+        {/* Product Short Videos Section */}
+        <StoreProductVideos
+          products={products}
+          categories={categories}
+          selectedCategory={categoryQ}
+          currencySymbol={currencySymbol}
+        />
 
         {/* Full Products Section Grid */}
         <section id="products-section" className="max-w-7xl mx-auto px-4 sm:px-6 my-8">
