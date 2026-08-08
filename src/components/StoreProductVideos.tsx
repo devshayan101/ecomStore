@@ -172,25 +172,28 @@ export default function StoreProductVideos({
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-      <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+      <div className="bg-white text-slate-900 p-5 sm:p-8 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
+        {/* Decorative Left Border line */}
+        <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-gradient-to-b from-purple-600 to-indigo-600"></div>
+
         {/* Absolute Glowing Blur Backdrops */}
-        <div className="absolute top-[-20%] left-[-10%] w-[40%] aspect-square rounded-full bg-blue-600/10 blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] aspect-square rounded-full bg-purple-600/10 blur-[100px] pointer-events-none"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[40%] aspect-square rounded-full bg-blue-500/5 blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] aspect-square rounded-full bg-purple-500/5 blur-[100px] pointer-events-none"></div>
 
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-500/10 p-2.5 rounded-xl border border-blue-500/20 text-blue-400">
+            <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
                 Trending Product Shorts
                 <span className="text-[10px] uppercase font-bold tracking-widest bg-gradient-to-r from-red-500 to-orange-500 text-white py-0.5 px-2 rounded-full">
                   Live
                 </span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400">Quick video walkthroughs and customer reviews</p>
+              <p className="text-xs sm:text-sm text-slate-500">Quick video walkthroughs and customer reviews</p>
             </div>
           </div>
 
@@ -200,8 +203,8 @@ export default function StoreProductVideos({
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 activeTab === 'all' 
-                  ? 'bg-white text-slate-900 shadow-lg' 
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-slate-900 text-white shadow-lg' 
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800'
               }`}
             >
               All
@@ -212,8 +215,8 @@ export default function StoreProductVideos({
                 onClick={() => setActiveTab(cat.slug)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   activeTab === cat.slug 
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' 
-                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                    ? 'bg-blue-600 text-white shadow-lg' 
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800'
                 }`}
               >
                 {cat.name}
@@ -224,15 +227,13 @@ export default function StoreProductVideos({
 
         {/* Video Thumbnail list */}
         {filteredVideos.length === 0 ? (
-          <div className="text-center py-16 text-sm text-slate-400 border border-dashed border-slate-800 rounded-2xl">
+          <div className="text-center py-16 text-sm text-slate-400 border border-dashed border-slate-200 rounded-2xl">
             No product videos available for this category yet.
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
             {filteredVideos.map(vid => {
               const matchedProduct = getProductForVideo(vid.id);
-              const currentLikes = likeCounts[vid.id] !== undefined ? likeCounts[vid.id] : vid.likes;
-              const isLiked = !!likedVideos[vid.id];
 
               return (
                 <div 
@@ -241,7 +242,7 @@ export default function StoreProductVideos({
                     setActiveVideo(vid);
                     setIsMuted(false);
                   }}
-                  className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 cursor-pointer hover:border-blue-500/50 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                  className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-slate-950 border border-slate-100 cursor-pointer hover:border-blue-500/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
                   {/* Thumbnail Image */}
                   <img
@@ -277,7 +278,7 @@ export default function StoreProductVideos({
                     
                     {/* Linked Product price tag if matched */}
                     {matchedProduct && (
-                      <div className="mt-1 bg-white/15 backdrop-blur-md py-1 px-2.5 rounded-lg border border-white/10 flex items-center justify-between text-[11px]">
+                      <div className="mt-1 bg-black/45 backdrop-blur-md py-1 px-2.5 rounded-lg border border-white/5 flex items-center justify-between text-[11px]">
                         <span className="truncate text-slate-200 font-medium">{matchedProduct.name}</span>
                         <span className="font-bold text-orange-400 ml-1.5 shrink-0">
                           {currencySymbol}{matchedProduct.variants?.[0]?.price}
