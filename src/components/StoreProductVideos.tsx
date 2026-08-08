@@ -23,7 +23,7 @@ const SHORT_VIDEOS_DATA = [
     id: 'vid-1',
     title: 'Vitamin C Serum Daily Glow Routine',
     category: 'skincare',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-beauty-woman-applying-moisturizer-face-cream-40505-large.mp4',
+    videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
     thumbnail: 'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=600&auto=format&fit=crop',
     views: '12.4K',
     likes: 843,
@@ -34,7 +34,7 @@ const SHORT_VIDEOS_DATA = [
     id: 'vid-2',
     title: 'Luxury Lipstick Matte Shades swatch',
     category: 'cosmetics',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-posing-with-a-red-handbag-40506-large.mp4',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     thumbnail: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600&auto=format&fit=crop',
     views: '8.9K',
     likes: 624,
@@ -45,7 +45,7 @@ const SHORT_VIDEOS_DATA = [
     id: 'vid-3',
     title: 'Summer Fashion Lookbook 2026',
     category: 'women',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-girl-opening-shopping-delivery-box-at-home-40348-large.mp4',
+    videoUrl: 'https://www.w3schools.com/html/movie.mp4',
     thumbnail: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=600&auto=format&fit=crop',
     views: '15.2K',
     likes: 1205,
@@ -56,7 +56,7 @@ const SHORT_VIDEOS_DATA = [
     id: 'vid-4',
     title: 'Smart Casual Outfits for Men',
     category: 'men',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-man-wearing-sunglasses-posing-in-city-40742-large.mp4',
+    videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
     thumbnail: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop',
     views: '9.1K',
     likes: 412,
@@ -67,7 +67,7 @@ const SHORT_VIDEOS_DATA = [
     id: 'vid-5',
     title: 'Applying Fragrance correctly - Tips',
     category: 'fragrance',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-woman-applying-perfume-on-her-wrist-40508-large.mp4',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     thumbnail: 'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop',
     views: '11.8K',
     likes: 954,
@@ -127,6 +127,72 @@ export default function StoreProductVideos({
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
   }, [activeVideo]);
+
+  // Sync mute state
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = isMuted;
+    }
+  }, [isMuted, activeVideo]);
+
+  const playNextVideo = () => {
+    if (!activeVideo) return;
+    const currentIndex = filteredVideos.findIndex(v => v.id === activeVideo.id);
+    if (currentIndex !== -1 && currentIndex < filteredVideos.length - 1) {
+      setActiveVideo(filteredVideos[currentIndex + 1]);
+    } else if (filteredVideos.length > 0) {
+      setActiveVideo(filteredVideos[0]);
+    }
+  };
+
+  const playPrevVideo = () => {
+    if (!activeVideo) return;
+    const currentIndex = filteredVideos.findIndex(v => v.id === activeVideo.id);
+    if (currentIndex !== -1 && currentIndex > 0) {
+      setActiveVideo(filteredVideos[currentIndex - 1]);
+    } else if (filteredVideos.length > 0) {
+      setActiveVideo(filteredVideos[filteredVideos.length - 1]);
+    }
+  };
+
+  // Keyboard navigation effect
+  useEffect(() => {
+    if (!activeVideo) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        playNextVideo();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        playPrevVideo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeVideo, filteredVideos]);
+
+  // Touch swipe navigation refs & handlers
+  const touchStartY = useRef(0);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchStartY.current - touchEndY;
+
+    if (deltaY > 50) {
+      playNextVideo();
+    } else if (deltaY < -50) {
+      playPrevVideo();
+    }
+  };
 
   // Like video handler
   const handleLike = (videoId: string, e?: React.MouseEvent) => {
@@ -295,7 +361,11 @@ export default function StoreProductVideos({
 
       {/* Portrait Reels Modal Viewer */}
       {activeVideo && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-lg p-2 sm:p-4">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-lg p-2 sm:p-4 select-none"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="relative w-full max-w-md aspect-[9/16] max-h-[92vh] bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
             
             {/* Modal Header Controls */}
