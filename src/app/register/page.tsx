@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Lock, Mail, User, Phone } from 'lucide-react';
+import { ArrowLeft, Loader2, Lock, Mail, User, Phone, CheckCircle2, ChevronRight } from 'lucide-react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/storefront';
 
@@ -78,45 +78,84 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#0a1828] via-[#0f2444] to-[#1e4d9e] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative Blur Spheres */}
-      <div className="absolute w-72 h-72 bg-[#c9a84c]/10 rounded-full blur-3xl -top-12 -left-12 pointer-events-none" />
-      <div className="absolute w-72 h-72 bg-blue-500/10 rounded-full blur-3xl -bottom-12 -right-12 pointer-events-none" />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-white relative overflow-hidden font-sans">
+      
+      {/* Left: Decorative Brand Panel */}
+      <div className="hidden lg:flex lg:col-span-5 bg-slate-950 p-12 flex-col justify-between relative overflow-hidden select-none">
+        {/* Glow Spheres background */}
+        <div className="absolute w-[80%] aspect-square rounded-full bg-blue-600/10 blur-[100px] top-[-10%] left-[-10%] pointer-events-none"></div>
+        <div className="absolute w-[80%] aspect-square rounded-full bg-purple-600/10 blur-[100px] bottom-[-10%] right-[-10%] pointer-events-none"></div>
 
-      <div className="w-full max-w-md z-10 flex flex-col gap-4">
-        {/* Back Link */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-white/70 hover:text-white mb-2 self-start select-none transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Shop
+        {/* Brand Link */}
+        <Link href="/" className="inline-flex flex-col select-none relative z-10">
+          <span className="text-2xl font-black tracking-tight text-white">
+            Olin<span className="text-orange-500">buy</span>
+          </span>
+          <span className="text-[9px] text-slate-400 tracking-[2px] uppercase font-bold mt-1">
+            Premium Marketplace
+          </span>
         </Link>
 
-        <div className="w-full bg-white/80 backdrop-blur-md rounded-3xl border border-[#c9a84c]/20 p-8 shadow-[0_8px_32px_rgba(15,36,68,0.08)] flex flex-col">
-          {/* Brand Header */}
-          <div className="text-center mb-6">
-            <Link href="/" className="inline-flex flex-col select-none mb-4">
-              <span className="font-heading text-2xl font-bold tracking-wider leading-none text-[#0f2444]">
-                Olin<span className="text-[#c9a84c]">buy</span>
-              </span>
-              <span className="text-[9px] text-[#1a3a6b]/95 tracking-[2px] uppercase font-bold mt-1.5">
-                India's Best Store
+        {/* Feature Highlights */}
+        <div className="space-y-6 relative z-10">
+          <h1 className="text-3xl font-black text-white tracking-tight leading-tight">
+            Create account, track orders, and get deals.
+          </h1>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span className="text-xs font-semibold text-slate-300">⚡ Blazing fast shipping to your doorstep</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span className="text-xs font-semibold text-slate-300">🔒 Secure processing and simple refunds</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span className="text-xs font-semibold text-slate-300">🏷️ Custom coupon discounts sent weekly</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer info */}
+        <div className="text-[10px] text-slate-500 relative z-10">
+          © {new Date().getFullYear()} Olinbuy. All rights reserved.
+        </div>
+      </div>
+
+      {/* Right: Registration Form */}
+      <div className="col-span-12 lg:col-span-7 flex items-center justify-center p-6 bg-slate-50/50 relative overflow-y-auto max-h-screen py-16">
+        
+        {/* Back Floating Button */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200/80 shadow-sm px-4 py-2 rounded-full absolute top-6 left-6 select-none transition-all duration-200 cursor-pointer active:scale-95 z-20"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Shop</span>
+        </Link>
+
+        <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.06)] flex flex-col my-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <Link href="/" className="inline-flex items-center gap-1 select-none mb-3 lg:hidden">
+              <span className="font-sans text-xl font-black tracking-tight text-slate-900">
+                Olin<span className="text-orange-500">buy</span>
               </span>
             </Link>
-            <h2 className="font-heading text-lg font-bold text-slate-800">Create Account</h2>
-            <p className="text-xs text-slate-400 mt-1">Join us to shop and track your orders easily</p>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Create Account</h2>
+            <p className="text-xs text-slate-500 mt-1">Get started today for special discounts</p>
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 text-xs font-bold mb-5 text-center select-none">
-              ❌ {error}
+            <div className="bg-red-50 border border-red-100 text-red-600 rounded-xl p-3 text-xs font-bold mb-5 text-center">
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="name" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Full Name *</label>
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="name" className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Full Name *</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -125,14 +164,14 @@ export default function RegisterPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                  placeholder="John Doe"
+                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50/50 focus:bg-white outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-slate-800 transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Email Address *</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="email" className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Email Address *</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -141,14 +180,14 @@ export default function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. john@example.com"
-                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                  placeholder="name@example.com"
+                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50/50 focus:bg-white outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-slate-800 transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="phone" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">WhatsApp / Mobile Number</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="phone" className="text-[9px] font-black uppercase text-slate-400 tracking-wider">WhatsApp / Mobile Number</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -156,14 +195,14 @@ export default function RegisterPage() {
                   id="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. 9876543210"
-                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                  placeholder="9876543210"
+                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50/50 focus:bg-white outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-slate-800 transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Password *</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="password" className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Password *</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -173,13 +212,13 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50/50 focus:bg-white outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-slate-800 transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="confirmPassword" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Confirm Password *</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="confirmPassword" className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Confirm Password *</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -189,7 +228,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
+                  className="w-full border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm bg-slate-50/50 focus:bg-white outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-slate-800 transition-all"
                 />
               </div>
             </div>
@@ -197,32 +236,35 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || socialLoading !== null}
-              className="w-full bg-gradient-to-r from-[#0f2444] to-[#1e4d9e] hover:opacity-95 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-3 rounded-xl text-xs font-black tracking-wider transition-all duration-200 shadow-md cursor-pointer flex items-center justify-center gap-2"
+              className="w-full bg-slate-900 hover:bg-orange-500 hover:text-white text-white py-3.5 rounded-xl text-xs font-black tracking-wider transition-all duration-200 shadow-sm cursor-pointer flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating Account...
+                  <span>Creating Account...</span>
                 </>
               ) : (
-                'Sign Up'
+                <>
+                  <span>Sign Up</span>
+                  <ChevronRight className="w-4 h-4" />
+                </>
               )}
             </button>
           </form>
 
-          {/* Social Register Separator */}
+          {/* Social Separator */}
           <div className="flex items-center my-6">
             <div className="flex-1 border-t border-slate-100" />
             <span className="text-[10px] font-bold text-slate-400 px-3 uppercase tracking-wider">Or continue with</span>
             <div className="flex-1 border-t border-slate-100" />
           </div>
 
-          {/* Social Register Buttons */}
+          {/* Social Sign-up Buttons */}
           <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => handleSocialSignIn('google')}
               disabled={loading || socialLoading !== null}
-              className="flex items-center justify-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50 py-2.5 rounded-xl text-[10px] font-black text-slate-600 transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 py-2.5 rounded-xl text-[10px] font-black text-slate-600 transition-all cursor-pointer disabled:opacity-50"
             >
               {socialLoading === 'google' ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -239,7 +281,7 @@ export default function RegisterPage() {
             <button
               onClick={() => handleSocialSignIn('facebook')}
               disabled={loading || socialLoading !== null}
-              className="flex items-center justify-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50 py-2.5 rounded-xl text-[10px] font-black text-slate-600 transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 py-2.5 rounded-xl text-[10px] font-black text-slate-600 transition-all cursor-pointer disabled:opacity-50"
             >
               {socialLoading === 'facebook' ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -253,7 +295,7 @@ export default function RegisterPage() {
             <button
               onClick={() => handleSocialSignIn('instagram')}
               disabled={loading || socialLoading !== null}
-              className="flex items-center justify-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50 py-2.5 rounded-xl text-[10px] font-black text-slate-600 transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 py-2.5 rounded-xl text-[10px] font-black text-slate-600 transition-all cursor-pointer disabled:opacity-50"
             >
               {socialLoading === 'instagram' ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -269,17 +311,18 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-center mt-6">
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Already have an account?{' '}
               <Link
                 href="/login"
-                className="font-extrabold text-[#1a3a6b] hover:text-[#c9a84c] transition-colors"
+                className="font-black text-slate-900 hover:text-orange-500 transition-colors"
               >
                 Log In
               </Link>
             </p>
           </div>
         </div>
+
       </div>
     </div>
   );
