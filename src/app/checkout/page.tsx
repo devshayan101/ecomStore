@@ -1,27 +1,58 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Script from 'next/script';
 import { useCart } from '@/lib/CartContext';
 import { checkout, verifyRazorpayPayment, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings, fetchShippingRates, ShippingRateOption } from '@/lib/api';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, CreditCard, Gift, Loader2, Package, Truck, Smartphone } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, CreditCard, Gift, Loader2, Package, Truck, Smartphone, ShoppingBag, MapPin, Check, Plus, Minus, Trash2, ShieldCheck, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
-  const { cartItems, cartTotal, clearCart } = useCart();
+  const searchParams = useSearchParams();
+  const initialStepParam = searchParams?.get('step');
+  
+  // Step state: 1 = Cart Items, 2 = Shipping & Billing Address, 3 = Payment Page
+  const [step, setStep] = useState<1 | 2 | 3>(
+    initialStepParam === '2' ? 2 : initialStepParam === '3' ? 3 : 1
+  );
+
+  const { cartItems, cartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
   const { data: session } = useSession();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState<StorefrontSettings | null>(null);
   
-  // Shipping State
+  // Shipping Rates State
   const [shippingRates, setShippingRates] = useState<ShippingRateOption[]>([]);
   const [selectedRate, setSelectedRate] = useState<ShippingRateOption | null>(null);
   const [fetchingRates, setFetchingRates] = useState(false);
+
+  // Address Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    street: '',
+    city: '',
+    state: '',
+    postcode: '',
+    country: 'India',
+  });
+
+  // Billing Address Toggle State
+  const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [billingData, setBillingData] = useState({
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    postcode: '',
+    country: 'India',
+  });
 
   const getValidCountryAndState = (
     candidateCountry: string,
@@ -56,18 +87,6 @@ export default function CheckoutPage() {
       .catch(console.error);
   }, []);
 
-  // Address Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    street: '',
-    city: '',
-    state: '',
-    postcode: '',
-    country: 'India',
-  });
-
   // Prefill authenticated customer details
   useEffect(() => {
     if (session?.user) {
@@ -81,6 +100,15 @@ export default function CheckoutPage() {
         name: u.name || '',
         email: u.email || '',
         phone: u.phone || '',
+        street: u.address?.street || '',
+        city: u.address?.city || '',
+        state,
+        postcode: u.address?.postcode || '',
+        country,
+      });
+
+      setBillingData({
+        name: u.name || '',
         street: u.address?.street || '',
         city: u.address?.city || '',
         state,
@@ -127,7 +155,7 @@ export default function CheckoutPage() {
       });
   }, [formData.country, formData.state, formData.postcode, cartItems, cartTotal]);
 
-  // Payment State
+  // Payment Method State
   const [paymentMethod, setPaymentMethod] = useState<'STRIPE' | 'RAZORPAY' | 'COD'>('RAZORPAY');
 
   const isDomestic = !formData.country || formData.country.trim().toLowerCase() === 'india' || formData.country.trim().toLowerCase() === 'in';
@@ -154,6 +182,43 @@ export default function CheckoutPage() {
     });
   };
 
+  const handleBillingInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setBillingData((prev) => {
+      if (name === 'country') {
+        return { ...prev, country: value, state: '' };
+      }
+      return { ...prev, [name]: value };
+    });
+  };
+
+  // Step Validation Helpers
+  const goToStep2 = () => {
+    setError(null);
+    if (cartItems.length === 0) {
+      setError('Your cart is empty. Add products before proceeding.');
+      return;
+    }
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToStep3 = () => {
+    setError(null);
+    if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
+      setError('Please fill in all required shipping address fields.');
+      return;
+    }
+    if (!sameAsShipping) {
+      if (!billingData.name || !billingData.street || !billingData.city || !billingData.state || !billingData.postcode) {
+        setError('Please fill in all required billing address fields.');
+        return;
+      }
+    }
+    setStep(3);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -165,6 +230,7 @@ export default function CheckoutPage() {
 
     if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
       setError('Please fill in all shipping fields.');
+      setStep(2);
       return;
     }
 
@@ -221,7 +287,7 @@ export default function CheckoutPage() {
             contact: formData.phone,
           },
           theme: {
-            color: '#059669',
+            color: '#FFA41C',
           },
           handler: async function (response: any) {
             try {
@@ -280,7 +346,6 @@ export default function CheckoutPage() {
 
       if (!isEnabled) return;
 
-      // Find tax rate
       let taxRate = 0;
       const rawCountry = formData.country || 'India';
       const shippingCountry = normalizeCountry(rawCountry);
@@ -354,11 +419,9 @@ export default function CheckoutPage() {
       }
 
       if (isInclusive) {
-        // Tax is included: calculate how much tax is inside
         const itemTax = itemSubtotal - (itemSubtotal / (1 + taxRate / 100));
         totalTax += itemTax;
       } else {
-        // Tax is exclusive: add on top
         const itemTax = itemSubtotal * (taxRate / 100);
         totalTax += itemTax;
       }
@@ -385,407 +448,764 @@ export default function CheckoutPage() {
   );
   const availableStates = matchedCountryConfig?.states || [];
 
+  const selectedBillingCountryName = billingData.country || 'India';
+  const matchedBillingCountryConfig = settings?.taxes?.countriesConfig?.find(
+    (c: any) => c.name.toLowerCase() === selectedBillingCountryName.toLowerCase() || c.code.toLowerCase() === selectedBillingCountryName.toLowerCase()
+  );
+  const availableBillingStates = matchedBillingCountryConfig?.states || [];
+
   return (
-    <div className="min-h-screen bg-[#f4f4f4] py-8 px-4 md:px-8">
+    <div className="min-h-screen bg-[#fbfcfd] text-slate-900 font-sans py-8 px-4 md:px-8">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
       <div className="max-w-5xl mx-auto">
-        {/* Back Link */}
+        {/* Back to Storefront */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#1a3a6b] mb-6 select-none transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ff6b00] hover:underline mb-6 select-none transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Shop
+          Back to Storefront
         </Link>
 
-        <h1 className="font-heading text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight mb-8 select-none">
-          Complete Your Order
-        </h1>
+        {/* Multi-Step Wizard Header Progress Bar */}
+        <div className="bg-white rounded-2xl border border-[#e2e2e3] p-4 md:p-6 shadow-sm mb-8">
+          <div className="flex items-center justify-between max-w-3xl mx-auto relative">
+            {/* Connecting Line */}
+            <div className="absolute top-1/2 left-8 right-8 -translate-y-1/2 h-0.5 bg-slate-200 z-0" />
+            <div
+              className="absolute top-1/2 left-8 -translate-y-1/2 h-0.5 bg-[#FFA41C] transition-all duration-500 z-0"
+              style={{
+                width: step === 1 ? '0%' : step === 2 ? '50%' : '100%',
+              }}
+            />
 
-        <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Forms */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Shipping Address */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-              <h3 className="font-heading text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-1 select-none">
-                📍 Delivery Information
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="name" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Full Name *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. John Doe"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="email" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Email Address *</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. john@example.com"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5 md:col-span-2">
-                  <label htmlFor="phone" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Mobile/WhatsApp Number *</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. 9876543210"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5 md:col-span-2">
-                  <label htmlFor="street" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Street Address *</label>
-                  <input
-                    type="text"
-                    id="street"
-                    name="street"
-                    value={formData.street}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. Apartment, Suite, Landmark, Street"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="city" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">City *</label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. Mohali"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="state" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">State *</label>
-                  {availableStates.length > 0 ? (
-                    <select
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      required
-                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors cursor-pointer"
-                    >
-                      <option value="">Select State</option>
-                      {availableStates.map((s: any) => (
-                        <option key={s.code} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="e.g. Punjab"
-                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                    />
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="postcode" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">ZIP/Postcode *</label>
-                  <input
-                    type="text"
-                    id="postcode"
-                    name="postcode"
-                    value={formData.postcode}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g. 160071"
-                    className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="country" className="text-[10px] font-black uppercase text-slate-400 tracking-wider select-none">Country *</label>
-                  {settings?.taxes?.countriesConfig && settings.taxes.countriesConfig.length > 0 ? (
-                    <select
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      required
-                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors cursor-pointer"
-                    >
-                      <option value="">Select Country</option>
-                      {settings.taxes.countriesConfig.map((c: any) => (
-                        <option key={c.name} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : settings?.taxes?.taxRules && Array.from(new Set(settings.taxes.taxRules.map((r: any) => r.country))).filter(Boolean).length > 0 ? (
-                    <select
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      required
-                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors cursor-pointer"
-                    >
-                      <option value="">Select Country</option>
-                      {Array.from(new Set(settings.taxes.taxRules.map((r: any) => r.country))).filter(Boolean).map((c: any) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="e.g. India"
-                      className="border border-slate-200 rounded-lg p-2.5 text-sm bg-slate-50 focus:bg-white outline-none focus:border-[#1a3a6b] text-slate-800 transition-colors"
-                    />
-                  )}
-                </div>
+            {/* Step 1 Indicator */}
+            <button
+              onClick={() => setStep(1)}
+              className="relative z-10 flex flex-col items-center gap-1.5 cursor-pointer group"
+            >
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
+                  step === 1
+                    ? 'bg-[#FFA41C] text-slate-950 ring-4 ring-orange-100 scale-105'
+                    : step > 1
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                }`}
+              >
+                {step > 1 ? <Check className="w-5 h-5 stroke-[2.5]" /> : <ShoppingBag className="w-4 h-4" />}
               </div>
-            </div>
+              <span
+                className={`text-xs font-bold ${
+                  step === 1 ? 'text-slate-900' : 'text-slate-500'
+                }`}
+              >
+                1. Cart Items
+              </span>
+            </button>
 
-            {/* Shipping Method Selector */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-              <h3 className="font-heading text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-1 select-none">
-                🚚 Choose Shipping Method
-              </h3>
-              
-              {!formData.country || !formData.state ? (
-                <p className="text-xs text-slate-400 py-2">Please enter your country and state to view available shipping options.</p>
-              ) : fetchingRates ? (
-                <div className="flex items-center gap-2 text-xs text-slate-500 py-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                  Calculating shipping rates...
-                </div>
-              ) : shippingRates.length === 0 ? (
-                <p className="text-xs text-red-500 font-medium py-2">No shipping methods are configured or available for your destination. Please contact store support.</p>
-              ) : (
-                <div className="space-y-3">
-                  {shippingRates.map((rate) => (
-                    <button
-                      key={rate.id}
-                      type="button"
-                      onClick={() => setSelectedRate(rate)}
-                      className={`w-full flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all ${
-                        selectedRate?.id === rate.id
-                          ? 'border-[#1a3a6b] bg-blue-50/50 shadow-sm'
-                          : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Truck className="w-5 h-5 text-slate-400" />
-                        <div>
-                          <h4 className="text-xs font-bold text-slate-800">{rate.name}</h4>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
-                            {rate.type === 'carrier' ? `Live Quote via ${rate.carrier?.toUpperCase()} | ` : ''}
-                            Estimated Delivery: {rate.deliveryTime || `${rate.estimatedDays || 3} days`}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-sm font-extrabold text-slate-800">
-                        {rate.price === 0 ? 'FREE' : `₹${rate.price.toLocaleString('en-IN')}`}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Payment Method Selector */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-              <h3 className="font-heading text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-1 select-none">
-                💳 Choose Payment Method
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {isDomestic ? (
-                  <>
-                    {/* Razorpay Online Payment Option */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('RAZORPAY')}
-                      className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'RAZORPAY'
-                        ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
-                        : 'border-slate-200 hover:border-slate-300'
-                        }`}
-                    >
-                      <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center">
-                        <Smartphone className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-800">Razorpay (UPI / NetBanking / Cards)</h4>
-                        <p className="text-[10px] text-slate-500 mt-0.5">Instant online payment for India</p>
-                      </div>
-                    </button>
-
-                    {/* Cash on Delivery option */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('COD')}
-                      className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'COD'
-                        ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
-                        : 'border-slate-200 hover:border-slate-300'
-                        }`}
-                    >
-                      <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-full flex items-center justify-center">
-                        <Gift className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-800">Cash on Delivery (COD)</h4>
-                        <p className="text-[10px] text-slate-400 mt-0.5">Pay in cash when package arrives</p>
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('STRIPE')}
-                    className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${paymentMethod === 'STRIPE'
-                      ? 'border-blue-500 bg-blue-50/50 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                  >
-                    <div className="w-10 h-10 bg-blue-50 text-[#1a3a6b] rounded-full flex items-center justify-center">
-                      <CreditCard className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-800">Stripe International Payment</h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Pay with global credit/debit cards</p>
-                    </div>
-                  </button>
-                )}
+            {/* Step 2 Indicator */}
+            <button
+              onClick={() => {
+                if (cartItems.length > 0) setStep(2);
+              }}
+              className={`relative z-10 flex flex-col items-center gap-1.5 ${
+                cartItems.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+              }`}
+            >
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
+                  step === 2
+                    ? 'bg-[#FFA41C] text-slate-950 ring-4 ring-orange-100 scale-105'
+                    : step > 2
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                }`}
+              >
+                {step > 2 ? <Check className="w-5 h-5 stroke-[2.5]" /> : <MapPin className="w-4 h-4" />}
               </div>
-            </div>
+              <span
+                className={`text-xs font-bold ${
+                  step === 2 ? 'text-slate-900' : 'text-slate-500'
+                }`}
+              >
+                2. Shipping & Billing
+              </span>
+            </button>
+
+            {/* Step 3 Indicator */}
+            <button
+              onClick={() => {
+                if (cartItems.length > 0 && formData.name && formData.street) setStep(3);
+              }}
+              className={`relative z-10 flex flex-col items-center gap-1.5 ${
+                cartItems.length > 0 && formData.name ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+              }`}
+            >
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
+                  step === 3
+                    ? 'bg-[#FFA41C] text-slate-950 ring-4 ring-orange-100 scale-105'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+              </div>
+              <span
+                className={`text-xs font-bold ${
+                  step === 3 ? 'text-slate-900' : 'text-slate-500'
+                }`}
+              >
+                3. Payment Page
+              </span>
+            </button>
           </div>
+        </div>
 
-          {/* Right Column: Cart Summary & Submit */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col">
-              <h3 className="font-heading text-base font-bold text-slate-800 border-b border-slate-100 pb-2.5 mb-3 select-none">
-                📋 Order Summary
-              </h3>
+        {/* Global Error Banner */}
+        {error && (
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 text-xs font-bold mb-6 flex items-center gap-2 select-none shadow-sm">
+            <span>❌ {error}</span>
+          </div>
+        )}
 
-              {/* Items List */}
-              <div className="flex-1 overflow-y-auto max-h-[220px] divide-y divide-slate-100 pr-1">
-                {cartItems.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center select-none">No items in cart</p>
-                ) : (
-                  cartItems.map((item) => {
-                    const imageUrl = item.product.images?.[0] || item.product.variants[0]?.image || null;
-                    return (
-                      <div key={item.variantId} className="flex gap-3 py-3 items-center">
-                        <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center select-none flex-shrink-0 overflow-hidden">
-                          {imageUrl ? (
-                            <img
-                              src={imageUrl}
-                              alt={item.product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Package className="w-5 h-5 text-slate-300 stroke-[1.5]" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-[11px] font-bold text-slate-800 truncate select-none">
-                            {item.product.name}
-                          </h4>
-                          <span className="text-[10px] text-slate-400 font-semibold select-none">
-                            Qty: {item.quantity}
-                          </span>
-                        </div>
-                        <span className="text-xs font-bold text-slate-700 select-none">
-                          ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Totals Panel */}
-              <div className="border-t border-slate-100 pt-3.5 mt-3 space-y-2 select-none">
-                <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
-                  <span>Subtotal</span>
-                  <span>₹{pricing.subtotal.toLocaleString('en-IN')}</span>
+        {/* STEP 1: CART REVIEW */}
+        {step === 1 && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                  <h2 className="font-heading text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <ShoppingBag className="w-5 h-5 text-[#ff6b00]" />
+                    Review Your Cart Products ({cartItems.reduce((acc, i) => acc + i.quantity, 0)})
+                  </h2>
+                  {cartItems.length > 0 && (
+                    <button
+                      onClick={clearCart}
+                      className="text-xs text-rose-600 hover:underline font-semibold"
+                    >
+                      Clear Cart
+                    </button>
+                  )}
                 </div>
-                {pricing.isEnabled && pricing.tax > 0 && (
-                  <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
-                    <span>Tax (GST/VAT) {pricing.isInclusive && '(Included)'}</span>
-                    <span>₹{Math.round(pricing.tax).toLocaleString('en-IN')}</span>
+
+                {cartItems.length === 0 ? (
+                  <div className="py-16 text-center space-y-3">
+                    <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto stroke-[1.5]" />
+                    <p className="text-sm font-bold text-slate-700">Your shopping cart is empty.</p>
+                    <Link
+                      href="/"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-950 bg-[#FFA41C] hover:bg-[#FFB542] px-4 py-2 rounded-xl transition-all shadow-sm"
+                    >
+                      Explore Products
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {cartItems.map((item) => {
+                      const imageUrl = item.product.images?.[0] || item.product.variants[0]?.image || null;
+                      return (
+                        <div key={item.variantId} className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
+                              {imageUrl ? (
+                                <img src={imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Package className="w-6 h-6 text-slate-400 stroke-[1.5]" />
+                              )}
+                            </div>
+                            <div>
+                              <Link
+                                href={`/products/${item.product._id}`}
+                                className="text-xs sm:text-sm font-bold text-slate-900 hover:text-[#ff6b00] line-clamp-2 transition-colors"
+                              >
+                                {item.product.name}
+                              </Link>
+                              <p className="text-[10px] text-slate-500 font-mono mt-0.5">SKU: {item.sku}</p>
+                              <p className="text-xs font-extrabold text-slate-900 mt-1">₹{item.price.toLocaleString('en-IN')}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between w-full sm:w-auto gap-6 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                            {/* Quantity Controls */}
+                            <div className="flex items-center border border-slate-200 rounded-lg bg-slate-50">
+                              <button
+                                onClick={() => updateQuantity(item.variantId, -1)}
+                                className="p-1.5 hover:bg-slate-200 text-slate-600 rounded-l-lg transition-colors cursor-pointer"
+                                aria-label="Decrease quantity"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="px-3 text-xs font-bold text-slate-900">{item.quantity}</span>
+                              <button
+                                onClick={() => updateQuantity(item.variantId, 1)}
+                                className="p-1.5 hover:bg-slate-200 text-slate-600 rounded-r-lg transition-colors cursor-pointer"
+                                aria-label="Increase quantity"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Item Subtotal & Trash */}
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-black text-slate-900">
+                                ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                              </span>
+                              <button
+                                onClick={() => removeFromCart(item.variantId)}
+                                className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                                aria-label="Remove item"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
-                <div className="flex justify-between items-center text-xs text-slate-500 font-bold">
-                  <span>Shipping {selectedRate ? `(${selectedRate.name})` : ''}</span>
-                  <span className={selectedRate && selectedRate.price > 0 ? "text-slate-800 font-extrabold" : "text-[#26a541]"}>
-                    {selectedRate && selectedRate.price > 0 ? `₹${selectedRate.price.toLocaleString('en-IN')}` : 'FREE'}
-                  </span>
+              </div>
+            </div>
+
+            {/* Right Summary Side */}
+            <div className="lg:col-span-4 space-y-4">
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4">
+                <h3 className="font-heading text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  Summary
+                </h3>
+                <div className="flex justify-between items-center text-xs font-bold text-slate-600">
+                  <span>Cart Subtotal</span>
+                  <span className="text-sm text-slate-900 font-extrabold">₹{pricing.subtotal.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between items-center border-t border-slate-100 pt-3 mt-1.5 font-heading text-lg font-black text-slate-900">
-                  <span>Total Amount</span>
-                  <span>₹{Math.round(pricing.total).toLocaleString('en-IN')}</span>
+                <p className="text-[11px] text-slate-500">Taxes and shipping rates will be calculated at step 2 & 3.</p>
+
+                <button
+                  onClick={goToStep2}
+                  disabled={cartItems.length === 0}
+                  className="w-full bg-[#FFA41C] hover:bg-[#FFB542] disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 border border-[#e49319]"
+                >
+                  <span>Proceed to Delivery Address</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: SHIPPING & BILLING ADDRESS */}
+        {step === 2 && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-6">
+              {/* Delivery Address Card */}
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4">
+                <h3 className="font-heading text-base font-bold text-slate-900 border-b border-slate-100 pb-2.5 mb-1 flex items-center gap-2 select-none">
+                  <MapPin className="w-5 h-5 text-[#ff6b00]" /> Delivery Information
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="name" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">Full Name *</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. John Doe"
+                      className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="email" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">Email Address *</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. john@example.com"
+                      className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label htmlFor="phone" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">Mobile/WhatsApp Number *</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. 9876543210"
+                      className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label htmlFor="street" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">Street Address *</label>
+                    <input
+                      type="text"
+                      id="street"
+                      name="street"
+                      value={formData.street}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. Apartment, Suite, Landmark, Street"
+                      className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="city" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">City *</label>
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. Mohali"
+                      className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="state" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">State *</label>
+                    {availableStates.length > 0 ? (
+                      <select
+                        id="state"
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        required
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors cursor-pointer"
+                      >
+                        <option value="">Select State</option>
+                        {availableStates.map((s: any) => (
+                          <option key={s.code} value={s.name}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        id="state"
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="e.g. Punjab"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="postcode" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">ZIP/Postcode *</label>
+                    <input
+                      type="text"
+                      id="postcode"
+                      name="postcode"
+                      value={formData.postcode}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. 160071"
+                      className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="country" className="text-[10px] font-black uppercase text-slate-500 tracking-wider select-none">Country *</label>
+                    {settings?.taxes?.countriesConfig && settings.taxes.countriesConfig.length > 0 ? (
+                      <select
+                        id="country"
+                        name="country"
+                        value={formData.country}
+                        onChange={handleInputChange}
+                        required
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors cursor-pointer"
+                      >
+                        <option value="">Select Country</option>
+                        {settings.taxes.countriesConfig.map((c: any) => (
+                          <option key={c.name} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        id="country"
+                        name="country"
+                        value={formData.country}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="e.g. India"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 transition-colors"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Error feedback */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-xs font-bold mt-4 select-none">
-                  ❌ {error}
-                </div>
-              )}
+              {/* Billing Address Card */}
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4">
+                <h3 className="font-heading text-base font-bold text-slate-900 border-b border-slate-100 pb-2.5 mb-1 flex items-center justify-between select-none">
+                  <span>📄 Billing Address</span>
+                </h3>
 
-              {/* Action Button */}
-              <button
-                type="submit"
-                disabled={loading || cartItems.length === 0}
-                className="w-full bg-[#1a3a6b] hover:bg-[#112952] disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-3.5 rounded-lg text-sm font-black tracking-wider transition-all duration-200 mt-6 shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99]"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Placing Your Order...
-                  </>
-                ) : (
-                  `Place Order — ₹${Math.round(pricing.total).toLocaleString('en-IN')}`
+                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-800 select-none">
+                  <input
+                    type="checkbox"
+                    checked={sameAsShipping}
+                    onChange={(e) => setSameAsShipping(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#FFA41C] focus:ring-amber-400 cursor-pointer"
+                  />
+                  <span>Billing address is the same as delivery address</span>
+                </label>
+
+                {!sameAsShipping && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label htmlFor="bname" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Billing Name *</label>
+                      <input
+                        type="text"
+                        id="bname"
+                        name="name"
+                        value={billingData.name}
+                        onChange={handleBillingInputChange}
+                        placeholder="Full Name"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label htmlFor="bstreet" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Street Address *</label>
+                      <input
+                        type="text"
+                        id="bstreet"
+                        name="street"
+                        value={billingData.street}
+                        onChange={handleBillingInputChange}
+                        placeholder="Billing Street Address"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="bcity" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">City *</label>
+                      <input
+                        type="text"
+                        id="bcity"
+                        name="city"
+                        value={billingData.city}
+                        onChange={handleBillingInputChange}
+                        placeholder="City"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="bstate" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">State *</label>
+                      <input
+                        type="text"
+                        id="bstate"
+                        name="state"
+                        value={billingData.state}
+                        onChange={handleBillingInputChange}
+                        placeholder="State"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
+                      />
+                    </div>
+                  </div>
                 )}
-              </button>
+              </div>
+
+              {/* Shipping Rates Card */}
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4">
+                <h3 className="font-heading text-base font-bold text-slate-900 border-b border-slate-100 pb-2.5 mb-1 select-none flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-[#ff6b00]" /> Shipping Method
+                </h3>
+                
+                {!formData.country || !formData.state ? (
+                  <p className="text-xs text-slate-500 py-2">Please enter your country and state above to view available shipping options.</p>
+                ) : fetchingRates ? (
+                  <div className="flex items-center gap-2 text-xs text-slate-500 py-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#ff6b00]" />
+                    Calculating available shipping rates...
+                  </div>
+                ) : shippingRates.length === 0 ? (
+                  <p className="text-xs text-rose-600 font-medium py-2">No custom shipping rates available for destination. Standard fallback shipping applied.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {shippingRates.map((rate) => (
+                      <button
+                        key={rate.id}
+                        type="button"
+                        onClick={() => setSelectedRate(rate)}
+                        className={`w-full flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                          selectedRate?.id === rate.id
+                            ? 'border-[#FFA41C] bg-amber-50/50 shadow-sm'
+                            : 'border-[#e2e2e3] hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Truck className="w-5 h-5 text-slate-500" />
+                          <div>
+                            <h4 className="text-xs font-bold text-slate-900">{rate.name}</h4>
+                            <p className="text-[10px] text-slate-500 mt-0.5">
+                              Estimated Delivery: {rate.deliveryTime || `${rate.estimatedDays || 3} days`}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-extrabold text-slate-900">
+                          {rate.price === 0 ? 'FREE' : `₹${rate.price.toLocaleString('en-IN')}`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Step 2 Action Buttons */}
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all cursor-pointer"
+                >
+                  ← Back to Cart
+                </button>
+                <button
+                  type="button"
+                  onClick={goToStep3}
+                  className="px-6 py-3 rounded-xl bg-[#FFA41C] hover:bg-[#FFB542] text-slate-950 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm border border-[#e49319]"
+                >
+                  <span>Proceed to Payment</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right Summary Side */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-3 select-none">
+                <h3 className="font-heading text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  Order Summary
+                </h3>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between text-slate-600 font-bold">
+                    <span>Items Subtotal</span>
+                    <span>₹{pricing.subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600 font-bold">
+                    <span>Shipping</span>
+                    <span className={selectedRate && selectedRate.price > 0 ? "text-slate-900" : "text-emerald-600"}>
+                      {selectedRate && selectedRate.price > 0 ? `₹${selectedRate.price.toLocaleString('en-IN')}` : 'FREE'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-2 font-black text-sm text-slate-900">
+                    <span>Total</span>
+                    <span>₹{Math.round(pricing.total).toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </form>
+        )}
+
+        {/* STEP 3: PAYMENT PAGE */}
+        {step === 3 && (
+          <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-6">
+              {/* Payment Method Selector Card */}
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4">
+                <h3 className="font-heading text-base font-bold text-slate-900 border-b border-slate-100 pb-2.5 mb-1 select-none flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-[#ff6b00]" /> Select Payment Method
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {isDomestic ? (
+                    <>
+                      {/* Razorpay Online Payment */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('RAZORPAY')}
+                        className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                          paymentMethod === 'RAZORPAY'
+                            ? 'border-[#FFA41C] bg-amber-50/60 ring-2 ring-orange-200 shadow-sm'
+                            : 'border-[#e2e2e3] hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center shrink-0">
+                          <Smartphone className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900">Razorpay (UPI / Cards / NetBanking)</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Instant secure payment for India</p>
+                        </div>
+                      </button>
+
+                      {/* Cash on Delivery */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('COD')}
+                        className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                          paymentMethod === 'COD'
+                            ? 'border-[#FFA41C] bg-amber-50/60 ring-2 ring-orange-200 shadow-sm'
+                            : 'border-[#e2e2e3] hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-full flex items-center justify-center shrink-0">
+                          <Gift className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900">Cash on Delivery (COD)</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Pay cash when package arrives</p>
+                        </div>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('STRIPE')}
+                      className={`flex items-center gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                        paymentMethod === 'STRIPE'
+                          ? 'border-blue-500 bg-blue-50/60 ring-2 ring-blue-200 shadow-sm'
+                          : 'border-[#e2e2e3] hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">Stripe International Payment</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Pay with global credit/debit cards</p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Delivery Address Summary Card */}
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-[#ff6b00]" /> Delivering To
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="text-xs text-[#ff6b00] font-bold hover:underline"
+                  >
+                    Edit
+                  </button>
+                </div>
+                <div className="text-xs text-slate-700 leading-relaxed pt-1">
+                  <p className="font-bold text-slate-900">{formData.name} ({formData.phone})</p>
+                  <p>{formData.street}, {formData.city}, {formData.state} - {formData.postcode}, {formData.country}</p>
+                </div>
+              </div>
+
+              {/* Step 3 Actions */}
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all cursor-pointer"
+                >
+                  ← Back to Address
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || cartItems.length === 0}
+                  className="px-8 py-3.5 rounded-xl bg-[#FFA41C] hover:bg-[#FFB542] disabled:opacity-50 text-slate-950 font-black text-sm flex items-center gap-2 transition-all cursor-pointer shadow-md border border-[#e49319] active:scale-95"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing Order...
+                    </>
+                  ) : (
+                    `Pay & Complete Order — ₹${Math.round(pricing.total).toLocaleString('en-IN')}`
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Right Summary Column */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4 select-none">
+                <h3 className="font-heading text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+                  Order Breakdown
+                </h3>
+
+                {/* Items Mini List */}
+                <div className="max-h-48 overflow-y-auto divide-y divide-slate-100">
+                  {cartItems.map((item) => (
+                    <div key={item.variantId} className="py-2.5 flex items-center justify-between text-xs">
+                      <div className="truncate pr-2">
+                        <span className="font-bold text-slate-800">{item.product.name}</span>
+                        <span className="text-[10px] text-slate-500 block">Qty: {item.quantity}</span>
+                      </div>
+                      <span className="font-bold text-slate-900">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pricing Totals */}
+                <div className="border-t border-slate-100 pt-3 space-y-2 text-xs font-bold text-slate-600">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>₹{pricing.subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  {pricing.isEnabled && pricing.tax > 0 && (
+                    <div className="flex justify-between text-slate-600 font-bold">
+                      <span>Tax (GST/VAT) {pricing.isInclusive && '(Included)'}</span>
+                      <span>₹{Math.round(pricing.tax).toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span className={selectedRate && selectedRate.price > 0 ? "text-slate-900" : "text-emerald-600"}>
+                      {selectedRate && selectedRate.price > 0 ? `₹${selectedRate.price.toLocaleString('en-IN')}` : 'FREE'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-100 pt-3 text-base font-black text-slate-900">
+                    <span>Grand Total</span>
+                    <span>₹{Math.round(pricing.total).toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-500">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> 256-Bit SSL Encrypted & Verified Checkout
+                </div>
+              </div>
+            </div>
+          </form>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#fbfcfd] flex items-center justify-center">
+          <div className="text-center space-y-2 select-none">
+            <Loader2 className="w-8 h-8 animate-spin text-[#ff6b00] mx-auto" />
+            <p className="text-xs text-slate-500 font-bold">Loading Checkout...</p>
+          </div>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }
