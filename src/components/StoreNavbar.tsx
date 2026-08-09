@@ -139,12 +139,12 @@ export default function StoreNavbar({
           {session?.user ? (
             <Link
               href="/profile"
-              className="flex items-center gap-2 bg-slate-800/60 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl transition-all border border-slate-700/60 hover:border-slate-600 cursor-pointer"
+              className="hidden sm:flex items-center gap-2 bg-slate-800/60 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl transition-all border border-slate-700/60 hover:border-slate-600 cursor-pointer"
             >
               <div className="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-400 font-mono flex items-center justify-center text-xs font-bold">
                 {session.user.name?.[0] || 'U'}
               </div>
-              <div className="hidden sm:flex flex-col text-left leading-none">
+              <div className="flex flex-col text-left leading-none">
                 <span className="text-[10px] text-slate-400">Welcome</span>
                 <span className="text-xs font-semibold max-w-[90px] truncate mt-0.5">{session.user.name?.split(' ')[0]}</span>
               </div>
@@ -152,17 +152,17 @@ export default function StoreNavbar({
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 hover:border-amber-400/40 cursor-pointer text-xs font-semibold"
+              className="hidden sm:flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 hover:border-amber-400/40 cursor-pointer text-xs font-semibold"
             >
               <User className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">Sign In</span>
+              <span>Sign In</span>
             </Link>
           )}
 
           {/* Wishlist */}
           <Link
             href="/wishlist"
-            className="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 text-xs font-semibold relative group"
+            className="hidden sm:flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-2 rounded-xl transition-all border border-slate-700/60 text-xs font-semibold relative group"
             aria-label="Wishlist"
           >
             <div className="relative">
@@ -173,7 +173,7 @@ export default function StoreNavbar({
                 </span>
               )}
             </div>
-            <span className="hidden sm:inline">Wishlist</span>
+            <span>Wishlist</span>
           </Link>
 
           {/* Orders */}
@@ -273,9 +273,16 @@ export default function StoreNavbar({
             <Link
               href="/wishlist"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
+              className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2 justify-between"
             >
-              <Heart className="w-4 h-4 text-rose-400" /> Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-rose-400" /> Wishlist
+              </div>
+              {wishlistCount > 0 && (
+                <span className="bg-rose-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
 
             <Link
@@ -286,13 +293,23 @@ export default function StoreNavbar({
               <Package className="w-4 h-4 text-cyan-400" /> Orders
             </Link>
 
-            <Link
-              href="/profile"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
-            >
-              <User className="w-4 h-4 text-amber-400" /> Profile
-            </Link>
+            {session?.user ? (
+              <Link
+                href="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
+              >
+                <User className="w-4 h-4 text-amber-400" /> Profile ({session.user.name?.split(' ')[0] || 'Account'})
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="py-2 px-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center gap-2"
+              >
+                <User className="w-4 h-4 text-amber-400" /> Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

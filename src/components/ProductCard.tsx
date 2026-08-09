@@ -99,32 +99,32 @@ export default function ProductCard({ product, onAddToCart, currencySymbol = 'â‚
         </div>
 
         {/* Info Area */}
-        <div className="p-4 flex-1 flex flex-col">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-[10px] font-sans font-bold text-[#a04100] uppercase tracking-wider">
+        <div className="p-3 sm:p-4 flex-1 flex flex-col">
+          <div className="flex items-center justify-between gap-1 mb-1.5">
+            <span className="text-[9px] sm:text-[10px] font-sans font-bold text-[#a04100] uppercase tracking-wider truncate">
               {product.tags.includes('techwear') ? 'Techwear Collection' : 'Catalog Pick'}
             </span>
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-[10px] font-sans font-semibold text-slate-600">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-sans font-semibold text-slate-600 shrink-0">
               <Star className="w-2.5 h-2.5 fill-[#FFA41C] text-[#FFA41C]" />
               {rating.toFixed(1)} ({reviews})
             </div>
           </div>
 
-          <h3 className="font-sans text-xs sm:text-sm font-bold text-slate-800 line-clamp-2 leading-tight flex-1 mb-2 group-hover:text-[#ff6b00] transition-colors">
+          <h3 className="font-sans text-xs sm:text-sm font-bold text-slate-800 line-clamp-2 leading-snug flex-1 mb-2 group-hover:text-[#ff6b00] transition-colors">
             {product.name}
           </h3>
 
           {/* Price Strip */}
-          <div className="flex items-baseline gap-1.5 flex-wrap mb-4">
-            <span className="font-sans text-sm sm:text-base font-extrabold text-slate-900">
+          <div className="flex items-baseline gap-1.5 flex-wrap mb-3">
+            <span className="font-sans text-xs sm:text-base font-extrabold text-slate-900">
               {currencySymbol}{price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </span>
             {discount > 0 && (
               <>
-                <span className="font-sans text-[11px] text-slate-400 line-through">
+                <span className="font-sans text-[10px] sm:text-[11px] text-slate-400 line-through">
                   {currencySymbol}{mrp.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
-                <span className="text-[9px] font-sans font-bold text-[#ba1a1a] bg-red-50 px-1 py-0.2 rounded border border-red-100">
+                <span className="text-[8px] sm:text-[9px] font-sans font-bold text-[#ba1a1a] bg-red-50 px-1 py-0.2 rounded border border-red-100">
                   -{discount}%
                 </span>
               </>
@@ -134,25 +134,25 @@ export default function ProductCard({ product, onAddToCart, currencySymbol = 'â‚
       </Link>
 
       {/* Action CTAs */}
-      <div className="p-4 pt-0 grid grid-cols-2 gap-2">
+      <div className="p-2.5 sm:p-4 pt-0 grid grid-cols-2 gap-1.5 sm:gap-2">
         <button
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onAddToCart(product);
           }}
-          className="flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200/60 py-2 rounded-lg text-[11px] font-sans font-bold transition-all cursor-pointer active:scale-95"
+          className="flex items-center justify-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200/60 py-2 px-1 rounded-lg text-[10px] sm:text-[11px] font-sans font-bold transition-all cursor-pointer active:scale-95 whitespace-nowrap"
         >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          <span>Cart</span>
+          <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-slate-600" />
+          <span className="whitespace-nowrap">Cart</span>
         </button>
 
         <button
           onClick={handleBuyNow}
-          className="flex items-center justify-center gap-1 bg-[#FFA41C] hover:bg-[#FFB542] text-black py-2 rounded-lg text-[11px] font-sans font-bold transition-all cursor-pointer shadow-sm active:scale-95 hover:scale-[1.01]"
+          className="flex items-center justify-center gap-1 bg-[#FFA41C] hover:bg-[#FFB542] text-black py-2 px-1 rounded-lg text-[10px] sm:text-[11px] font-sans font-bold transition-all cursor-pointer shadow-sm active:scale-95 hover:scale-[1.01] whitespace-nowrap"
         >
-          <Zap className="w-3.5 h-3.5 fill-black stroke-black" />
-          <span>Buy Now</span>
+          <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 fill-black stroke-black" />
+          <span className="whitespace-nowrap">Buy Now</span>
         </button>
       </div>
     </div>

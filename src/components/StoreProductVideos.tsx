@@ -12,7 +12,9 @@ import {
   ArrowRight, 
   TrendingUp, 
   Eye,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import Link from 'next/link';
@@ -48,31 +50,31 @@ const SHORT_VIDEOS_DATA = [
     videoUrl: 'https://www.w3schools.com/html/movie.mp4',
     thumbnail: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=600&auto=format&fit=crop',
     views: '15.2K',
-    likes: 1205,
-    duration: '0:18',
-    productId: '12' // mapped to Women's Floral Print Kurti
+    likes: 1204,
+    duration: '0:20',
+    productId: '2' // mapped to Oversized Denim Jacket
   },
   {
     id: 'vid-4',
-    title: 'Smart Casual Outfits for Men',
-    category: 'men',
+    title: 'Smart Watch Series X Unboxing',
+    category: 'electronics',
     videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-    thumbnail: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop',
-    views: '9.1K',
-    likes: 412,
-    duration: '0:14',
-    productId: '17' // mapped to Men's Slim Fit Formal Shirt
+    thumbnail: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop',
+    views: '22.1K',
+    likes: 1890,
+    duration: '0:18',
+    productId: '4' // mapped to Wireless Headphones
   },
   {
     id: 'vid-5',
-    title: 'Applying Fragrance correctly - Tips',
-    category: 'fragrance',
+    title: 'Techwear Streetwear Styling Guide',
+    category: 'men',
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-    thumbnail: 'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop',
-    views: '11.8K',
-    likes: 954,
-    duration: '0:11',
-    productId: '5' // fallback to a skincare or custom product
+    thumbnail: 'https://images.unsplash.com/photo-1516826957135-700dedea698c?q=80&w=600&auto=format&fit=crop',
+    views: '19.4K',
+    likes: 1430,
+    duration: '0:14',
+    productId: '5' // mapped to Leather Boots
   }
 ];
 
@@ -99,6 +101,15 @@ export default function StoreProductVideos({
   const [addedStatus, setAddedStatus] = useState<Record<string, boolean>>({});
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollShorts = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   // Sync state with parent selected category
   useEffect(() => {
@@ -297,64 +308,85 @@ export default function StoreProductVideos({
             No product videos available for this category yet.
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 relative z-10">
-            {filteredVideos.map(vid => {
-              const matchedProduct = getProductForVideo(vid.id);
+          <div className="relative group/shorts-section">
+            {/* Scroll Navigation Buttons */}
+            <button
+              onClick={() => scrollShorts('left')}
+              className="absolute left-[-18px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200 opacity-0 group-hover/shorts-section:opacity-100"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+            </button>
+            <button
+              onClick={() => scrollShorts('right')}
+              className="absolute right-[-18px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200 opacity-0 group-hover/shorts-section:opacity-100"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+            </button>
 
-              return (
-                <div 
-                  key={vid.id}
-                  onClick={() => {
-                    setActiveVideo(vid);
-                    setIsMuted(false);
-                  }}
-                  className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-slate-950 border border-slate-100 cursor-pointer hover:border-blue-500/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  {/* Thumbnail Image */}
-                  <img
-                    src={vid.thumbnail}
-                    alt={vid.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out opacity-80"
-                  />
+            <div
+              ref={scrollRef}
+              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar scroll-smooth snap-x snap-mandatory relative z-10"
+            >
+              {filteredVideos.map(vid => {
+                const matchedProduct = getProductForVideo(vid.id);
 
-                  {/* Gradient bottom overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                return (
+                  <div 
+                    key={vid.id}
+                    onClick={() => {
+                      setActiveVideo(vid);
+                      setIsMuted(false);
+                    }}
+                    className="group relative w-[170px] sm:w-[200px] md:w-[220px] aspect-[9/16] shrink-0 snap-start rounded-2xl overflow-hidden bg-slate-950 border border-slate-100 cursor-pointer hover:border-blue-500/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    {/* Thumbnail Image */}
+                    <img
+                      src={vid.thumbnail}
+                      alt={vid.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out opacity-80"
+                    />
 
-                  {/* View count tag */}
-                  <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px] font-bold text-slate-300">
-                    <Eye className="w-3 h-3 text-blue-400" />
-                    <span>{vid.views}</span>
-                  </div>
+                    {/* Gradient bottom overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
 
-                  {/* Play Button Icon Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white scale-90 group-hover:scale-100 group-hover:bg-white group-hover:text-slate-950 transition-all duration-300">
-                      <Play className="w-5 h-5 fill-current ml-0.5" />
+                    {/* View count tag */}
+                    <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px] font-bold text-slate-300">
+                      <Eye className="w-3 h-3 text-blue-400" />
+                      <span>{vid.views}</span>
+                    </div>
+
+                    {/* Play Button Icon Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white scale-90 group-hover:scale-100 group-hover:bg-white group-hover:text-slate-950 transition-all duration-300">
+                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                      </div>
+                    </div>
+
+                    {/* Title & Info Block */}
+                    <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5">
+                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400">
+                        {vid.category}
+                      </p>
+                      <p className="text-xs font-bold line-clamp-2 text-white leading-tight">
+                        {vid.title}
+                      </p>
+                      
+                      {/* Linked Product price tag if matched */}
+                      {matchedProduct && (
+                        <div className="mt-1 bg-black/45 backdrop-blur-md py-1 px-2.5 rounded-lg border border-white/5 flex items-center justify-between text-[11px]">
+                          <span className="truncate text-slate-200 font-medium">{matchedProduct.name}</span>
+                          <span className="font-bold text-orange-400 ml-1.5 shrink-0">
+                            {currencySymbol}{matchedProduct.variants?.[0]?.price}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Title & Info Block */}
-                  <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5">
-                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400">
-                      {vid.category}
-                    </p>
-                    <p className="text-xs font-bold line-clamp-2 text-white leading-tight">
-                      {vid.title}
-                    </p>
-                    
-                    {/* Linked Product price tag if matched */}
-                    {matchedProduct && (
-                      <div className="mt-1 bg-black/45 backdrop-blur-md py-1 px-2.5 rounded-lg border border-white/5 flex items-center justify-between text-[11px]">
-                        <span className="truncate text-slate-200 font-medium">{matchedProduct.name}</span>
-                        <span className="font-bold text-orange-400 ml-1.5 shrink-0">
-                          {currencySymbol}{matchedProduct.variants?.[0]?.price}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

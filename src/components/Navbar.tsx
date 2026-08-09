@@ -79,7 +79,7 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
 
           {/* Customer Auth / Profile Dropdown */}
           {status === 'authenticated' && session?.user ? (
-            <div className="relative">
+            <div className="relative hidden sm:block">
               <button
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                 className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-xl text-xs font-semibold transition-all border border-white/10 cursor-pointer select-none text-white"
@@ -140,7 +140,7 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border border-white/10 cursor-pointer text-white"
+              className="hidden sm:flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border border-white/10 cursor-pointer text-white"
             >
               <User className="w-4 h-4 text-[#CCFF00]" />
               <span>Login</span>
@@ -160,7 +160,7 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
           {/* Wishlist Icon Button */}
           <Link
             href="/wishlist"
-            className="relative p-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl transition-all border border-white/10 cursor-pointer group"
+            className="hidden sm:flex relative p-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl transition-all border border-white/10 cursor-pointer group"
             aria-label="Wishlist"
           >
             <Heart className="w-4 h-4 text-rose-400 group-hover:scale-110 transition-transform" />
