@@ -34,7 +34,7 @@ const DEFAULT_PROMO_CARDS: PromoCardItem[] = [
     title: 'Skincare',
     category: 'skincare',
     btnText: 'Shop Skincare',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBzT4BxPh7BwfGEdYyVE_TGfbuIb7yuca2hE6bTu7zUg5lgTu2EqazlLhNem44ED2vfvhLE3FOLN6fqkjxYkwD_AtV_L9e0oeJl5MxcD542xiw8_S2yNro__X2U6FuBlt_X1rz3s7E8mTKIe97_LvQuBPG4KhH1W4dcu_Xgau9sfJgH7G_fss1eRlgH_WQGHs49NgDT_WXLlbSfLPR9et3PLu_FKdMwWkBgMaedtAMss-T-uyP-c5hx',
+    image: '/images/fallback/promo-skincare.png',
   },
   {
     id: 'promo-2',
@@ -42,7 +42,7 @@ const DEFAULT_PROMO_CARDS: PromoCardItem[] = [
     title: 'Cosmetics',
     category: 'cosmetics',
     btnText: 'Shop Cosmetics',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDsTirY_e1jNQwxEIY6aktpPqvzu4qDUdVNzujEXjwOnmCzQtrJiTWgmjfwz88JWCEUEDySOJjNrhfzvewsDxg-xCHQDNmTm9NvLDPZrXWequcWFzw37K4WGQiR0ZcliZ1noC0gPXEd2z8jpS3nhOke7THNlMM5tQ44zt48g_wVNkPxR2FhK2NQfTM4pi8c_esijit6Y5F4_kWOeHQVWYP2qt_C4rAeTWTep5iC_wZhStAxcypoIogR',
+    image: '/images/fallback/promo-cosmetics.png',
   },
   {
     id: 'promo-3',
@@ -50,7 +50,7 @@ const DEFAULT_PROMO_CARDS: PromoCardItem[] = [
     title: "Women's Fashion",
     category: 'women',
     btnText: "Shop Women's Fashion",
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBr6_rA76h40BVBwChWGZ8XPb95figuLUOe-FUbhq5kCeDJu7VRTVoSZU5oUIKixEucOdditbmZDqKeKYkz7V4RAniGVeQ_iKDy2GQYD4rgxGazye_93ns56B1vOWLryLoPm3Zn1JQ7M3F2MVFd2ZtK6ans_aRLsk3LVdTpaixIE-wEcQAjY1p_YNM3W1FE2bDNhwJm23SRdSpPyfYCHHblsBIDDjtbRxAbAbswtqtNPWn9BNZ4dU-c',
+    image: '/images/fallback/promo-fashion.png',
   },
   {
     id: 'promo-4',
@@ -58,7 +58,7 @@ const DEFAULT_PROMO_CARDS: PromoCardItem[] = [
     title: 'Wholesale Program',
     category: 'wholesale',
     btnText: 'Shop Wholesale',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTXaQ56aX6NsCN63RKDG8-tYn-iVaF8MQZOcWzzHdwcHFrLHUQ968gJqJuSW2EvaA9BfrYZ0pJ1XdKTDHxevQvODhyUJi7o7-n4a4knMz1BE5FWplBQbyogVEwWuT48S46wvovDfPLn_Er7SaJ2osoQLC7xbKTp_MLwgqQwQFSL0sbfxmU74_DSOaCwQfAQkeEjIKc-9dIx8_nAQWH3CFguiV_aR401klhvYzV4r8cd-y6eNlGX85p',
+    image: '/images/fallback/promo-wholesale.png',
   },
 ];
 
