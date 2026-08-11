@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, Menu, X, PhoneCall, User, LogOut, History, UserCog, ChevronDown, Flame, Heart } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useWishlist } from '@/lib/WishlistContext';
@@ -19,6 +19,39 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
   const { data: session, status } = useSession();
   const [isMobileSearchVisible, setIsMobileSearchVisible] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [renderProfileDropdown, setRenderProfileDropdown] = useState(false);
+  const [isProfileClosing, setIsProfileClosing] = useState(false);
+
+  const [renderMobileSearch, setRenderMobileSearch] = useState(false);
+  const [isMobileSearchClosing, setIsMobileSearchClosing] = useState(false);
+
+  useEffect(() => {
+    if (isProfileDropdownOpen) {
+      setRenderProfileDropdown(true);
+      setIsProfileClosing(false);
+    } else if (renderProfileDropdown) {
+      setIsProfileClosing(true);
+      const timer = setTimeout(() => {
+        setRenderProfileDropdown(false);
+        setIsProfileClosing(false);
+      }, 180);
+      return () => clearTimeout(timer);
+    }
+  }, [isProfileDropdownOpen]);
+
+  useEffect(() => {
+    if (isMobileSearchVisible) {
+      setRenderMobileSearch(true);
+      setIsMobileSearchClosing(false);
+    } else if (renderMobileSearch) {
+      setIsMobileSearchClosing(true);
+      const timer = setTimeout(() => {
+        setRenderMobileSearch(false);
+        setIsMobileSearchClosing(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobileSearchVisible]);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
@@ -91,13 +124,15 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
                 <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
               </button>
 
-              {isProfileDropdownOpen && (
+              {renderProfileDropdown && (
                 <>
                   <div
                     className="fixed inset-0 z-30"
                     onClick={() => setIsProfileDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-52 bg-[#121218] text-zinc-200 rounded-2xl border border-white/10 shadow-2xl py-2 z-40 select-none animate-in fade-in zoom-in-95">
+                  <div className={`absolute right-0 mt-2 w-52 bg-[#121218] text-zinc-200 rounded-2xl border border-white/10 shadow-2xl py-2 z-40 select-none ${
+                    isProfileClosing ? 'animate-dropdown-exit' : 'animate-dropdown-enter'
+                  }`}>
                     <div className="px-4 py-2 border-b border-white/5 mb-1">
                       <p className="text-[10px] font-mono uppercase text-[#CCFF00]">VERIFIED USER</p>
                       <p className="text-xs font-semibold text-white truncate">{session.user.email}</p>
@@ -188,8 +223,10 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
       </div>
 
       {/* Mobile Search Overlay */}
-      {isMobileSearchVisible && (
-        <div className="md:hidden mt-2 glass-panel p-3 rounded-xl border border-white/10 shadow-xl">
+      {renderMobileSearch && (
+        <div className={`md:hidden mt-2 glass-panel p-3 rounded-xl border border-white/10 shadow-xl overflow-hidden origin-top ${
+          isMobileSearchClosing ? 'animate-menu-exit' : 'animate-menu-enter'
+        }`}>
           <div className="flex items-center bg-black/60 rounded-lg overflow-hidden border border-[#CCFF00]/40">
             <Search className="w-4 h-4 ml-3 text-zinc-400" />
             <input

@@ -14,9 +14,9 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const initialStepParam = searchParams?.get('step');
   
-  // Step state: 1 = Cart Items, 2 = Shipping & Billing Address, 3 = Payment Page
-  const [step, setStep] = useState<1 | 2 | 3>(
-    initialStepParam === '2' ? 2 : initialStepParam === '3' ? 3 : 1
+  // Step state: 1 = Shipping & Billing Address, 2 = Payment Page
+  const [step, setStep] = useState<1 | 2>(
+    initialStepParam === '2' ? 2 : 1
   );
 
   const { cartItems, cartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -199,12 +199,6 @@ function CheckoutContent() {
       setError('Your cart is empty. Add products before proceeding.');
       return;
     }
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const goToStep3 = () => {
-    setError(null);
     if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
       setError('Please fill in all required shipping address fields.');
       return;
@@ -215,7 +209,7 @@ function CheckoutContent() {
         return;
       }
     }
-    setStep(3);
+    setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -230,7 +224,7 @@ function CheckoutContent() {
 
     if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
       setError('Please fill in all shipping fields.');
-      setStep(2);
+      setStep(1);
       return;
     }
 
@@ -470,17 +464,17 @@ function CheckoutContent() {
 
         {/* Multi-Step Wizard Header Progress Bar */}
         <div className="bg-white rounded-2xl border border-[#e2e2e3] p-4 md:p-6 shadow-sm mb-8">
-          <div className="flex items-center justify-between max-w-3xl mx-auto relative">
+          <div className="flex items-center justify-between max-w-xl mx-auto relative">
             {/* Connecting Line */}
-            <div className="absolute top-1/2 left-8 right-8 -translate-y-1/2 h-0.5 bg-slate-200 z-0" />
+            <div className="absolute top-1/2 left-12 right-12 -translate-y-1/2 h-0.5 bg-slate-200 z-0" />
             <div
-              className="absolute top-1/2 left-8 -translate-y-1/2 h-0.5 bg-[#FFA41C] transition-all duration-500 z-0"
+              className="absolute top-1/2 left-12 -translate-y-1/2 h-0.5 bg-[#FFA41C] transition-all duration-500 z-0"
               style={{
-                width: step === 1 ? '0%' : step === 2 ? '50%' : '100%',
+                width: step === 1 ? '0%' : '100%',
               }}
             />
 
-            {/* Step 1 Indicator */}
+            {/* Step 1 Indicator: Delivery & Billing Address */}
             <button
               onClick={() => setStep(1)}
               className="relative z-10 flex flex-col items-center gap-1.5 cursor-pointer group"
@@ -489,55 +483,24 @@ function CheckoutContent() {
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
                   step === 1
                     ? 'bg-[#FFA41C] text-slate-950 ring-4 ring-orange-100 scale-105'
-                    : step > 1
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                    : 'bg-emerald-500 text-white'
                 }`}
               >
-                {step > 1 ? <Check className="w-5 h-5 stroke-[2.5]" /> : <ShoppingBag className="w-4 h-4" />}
+                {step > 1 ? <Check className="w-5 h-5 stroke-[2.5]" /> : <MapPin className="w-4 h-4" />}
               </div>
               <span
                 className={`text-xs font-bold ${
                   step === 1 ? 'text-slate-900' : 'text-slate-500'
                 }`}
               >
-                1. Cart Items
+                1. Delivery Address
               </span>
             </button>
 
-            {/* Step 2 Indicator */}
+            {/* Step 2 Indicator: Payment & Place Order */}
             <button
               onClick={() => {
-                if (cartItems.length > 0) setStep(2);
-              }}
-              className={`relative z-10 flex flex-col items-center gap-1.5 ${
-                cartItems.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
-                  step === 2
-                    ? 'bg-[#FFA41C] text-slate-950 ring-4 ring-orange-100 scale-105'
-                    : step > 2
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-slate-100 text-slate-400 border border-slate-200'
-                }`}
-              >
-                {step > 2 ? <Check className="w-5 h-5 stroke-[2.5]" /> : <MapPin className="w-4 h-4" />}
-              </div>
-              <span
-                className={`text-xs font-bold ${
-                  step === 2 ? 'text-slate-900' : 'text-slate-500'
-                }`}
-              >
-                2. Shipping & Billing
-              </span>
-            </button>
-
-            {/* Step 3 Indicator */}
-            <button
-              onClick={() => {
-                if (cartItems.length > 0 && formData.name && formData.street) setStep(3);
+                if (cartItems.length > 0 && formData.name && formData.street) setStep(2);
               }}
               className={`relative z-10 flex flex-col items-center gap-1.5 ${
                 cartItems.length > 0 && formData.name ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
@@ -545,7 +508,7 @@ function CheckoutContent() {
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
-                  step === 3
+                  step === 2
                     ? 'bg-[#FFA41C] text-slate-950 ring-4 ring-orange-100 scale-105'
                     : 'bg-slate-100 text-slate-400 border border-slate-200'
                 }`}
@@ -554,10 +517,10 @@ function CheckoutContent() {
               </div>
               <span
                 className={`text-xs font-bold ${
-                  step === 3 ? 'text-slate-900' : 'text-slate-500'
+                  step === 2 ? 'text-slate-900' : 'text-slate-500'
                 }`}
               >
-                3. Payment Page
+                2. Payment & Confirm
               </span>
             </button>
           </div>
@@ -570,132 +533,8 @@ function CheckoutContent() {
           </div>
         )}
 
-        {/* STEP 1: CART REVIEW */}
+        {/* STEP 1: SHIPPING & BILLING ADDRESS */}
         {step === 1 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-4">
-              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                  <h2 className="font-heading text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-[#ff6b00]" />
-                    Review Your Cart Products ({cartItems.reduce((acc, i) => acc + i.quantity, 0)})
-                  </h2>
-                  {cartItems.length > 0 && (
-                    <button
-                      onClick={clearCart}
-                      className="text-xs text-rose-600 hover:underline font-semibold"
-                    >
-                      Clear Cart
-                    </button>
-                  )}
-                </div>
-
-                {cartItems.length === 0 ? (
-                  <div className="py-16 text-center space-y-3">
-                    <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto stroke-[1.5]" />
-                    <p className="text-sm font-bold text-slate-700">Your shopping cart is empty.</p>
-                    <Link
-                      href="/"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-950 bg-[#FFA41C] hover:bg-[#FFB542] px-4 py-2 rounded-xl transition-all shadow-sm"
-                    >
-                      Explore Products
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {cartItems.map((item) => {
-                      const imageUrl = item.product.images?.[0] || item.product.variants[0]?.image || null;
-                      return (
-                        <div key={item.variantId} className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
-                              {imageUrl ? (
-                                <img src={imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <Package className="w-6 h-6 text-slate-400 stroke-[1.5]" />
-                              )}
-                            </div>
-                            <div>
-                              <Link
-                                href={`/products/${item.product._id}`}
-                                className="text-xs sm:text-sm font-bold text-slate-900 hover:text-[#ff6b00] line-clamp-2 transition-colors"
-                              >
-                                {item.product.name}
-                              </Link>
-                              <p className="text-[10px] text-slate-500 font-mono mt-0.5">SKU: {item.sku}</p>
-                              <p className="text-xs font-extrabold text-slate-900 mt-1">₹{item.price.toLocaleString('en-IN')}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between w-full sm:w-auto gap-6 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                            {/* Quantity Controls */}
-                            <div className="flex items-center border border-slate-200 rounded-lg bg-slate-50">
-                              <button
-                                onClick={() => updateQuantity(item.variantId, -1)}
-                                className="p-1.5 hover:bg-slate-200 text-slate-600 rounded-l-lg transition-colors cursor-pointer"
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus className="w-3.5 h-3.5" />
-                              </button>
-                              <span className="px-3 text-xs font-bold text-slate-900">{item.quantity}</span>
-                              <button
-                                onClick={() => updateQuantity(item.variantId, 1)}
-                                className="p-1.5 hover:bg-slate-200 text-slate-600 rounded-r-lg transition-colors cursor-pointer"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-
-                            {/* Item Subtotal & Trash */}
-                            <div className="flex items-center gap-3">
-                              <span className="text-sm font-black text-slate-900">
-                                ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                              </span>
-                              <button
-                                onClick={() => removeFromCart(item.variantId)}
-                                className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                                aria-label="Remove item"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Summary Side */}
-            <div className="lg:col-span-4 space-y-4">
-              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-4">
-                <h3 className="font-heading text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">
-                  Summary
-                </h3>
-                <div className="flex justify-between items-center text-xs font-bold text-slate-600">
-                  <span>Cart Subtotal</span>
-                  <span className="text-sm text-slate-900 font-extrabold">₹{pricing.subtotal.toLocaleString('en-IN')}</span>
-                </div>
-                <p className="text-[11px] text-slate-500">Taxes and shipping rates will be calculated at step 2 & 3.</p>
-
-                <button
-                  onClick={goToStep2}
-                  disabled={cartItems.length === 0}
-                  className="w-full bg-[#FFA41C] hover:bg-[#FFB542] disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 border border-[#e49319]"
-                >
-                  <span>Proceed to Delivery Address</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 2: SHIPPING & BILLING ADDRESS */}
-        {step === 2 && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-7 space-y-6">
               {/* Delivery Address Card */}
@@ -971,18 +810,11 @@ function CheckoutContent() {
                 )}
               </div>
 
-              {/* Step 2 Action Buttons */}
-              <div className="flex items-center justify-between gap-4">
+              {/* Step 1 Action Buttons */}
+              <div className="flex items-center justify-end gap-4">
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all cursor-pointer"
-                >
-                  ← Back to Cart
-                </button>
-                <button
-                  type="button"
-                  onClick={goToStep3}
+                  onClick={goToStep2}
                   className="px-6 py-3 rounded-xl bg-[#FFA41C] hover:bg-[#FFB542] text-slate-950 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm border border-[#e49319]"
                 >
                   <span>Proceed to Payment</span>
@@ -1018,8 +850,8 @@ function CheckoutContent() {
           </div>
         )}
 
-        {/* STEP 3: PAYMENT PAGE */}
-        {step === 3 && (
+        {/* STEP 2: PAYMENT & CONFIRM PAGE */}
+        {step === 2 && (
           <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-7 space-y-6">
               {/* Payment Method Selector Card */}
@@ -1111,14 +943,14 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Step 3 Actions */}
+              {/* Step 2 Actions */}
               <div className="flex items-center justify-between gap-4">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                   className="px-5 py-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all cursor-pointer"
                 >
-                  ← Back to Address
+                  ← Back to Delivery Address
                 </button>
                 <button
                   type="submit"

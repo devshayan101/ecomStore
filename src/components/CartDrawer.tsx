@@ -1,7 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, Plus, Minus, ShoppingBag, Package, ArrowRight, Sparkles, ShieldCheck, Truck, Zap } from 'lucide-react';
+import { 
+  X, 
+  Trash2, 
+  Plus, 
+  Minus, 
+  ShoppingBag, 
+  Package, 
+  ArrowRight, 
+  Sparkles, 
+  ShieldCheck, 
+  Truck, 
+  Zap,
+  Tag,
+  RotateCcw
+} from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useRouter } from 'next/navigation';
 import { fetchStorefrontSettings } from '@/lib/api';
@@ -19,6 +33,9 @@ export default function CartDrawer() {
   } = useCart();
 
   const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercent: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStorefrontSettings()
@@ -31,7 +48,24 @@ export default function CartDrawer() {
       .catch(console.error);
   }, []);
 
-  if (!isCartOpen) return null;
+  const [shouldRender, setShouldRender] = useState(isCartOpen);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (isCartOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+    } else if (shouldRender) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [isCartOpen]);
+
+  if (!shouldRender) return null;
 
   const totalItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -40,35 +74,65 @@ export default function CartDrawer() {
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartTotal);
   const freeShippingProgress = Math.min(100, (cartTotal / freeShippingThreshold) * 100);
 
+  // Coupon application logic
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCouponError(null);
+    const code = couponCode.trim().toUpperCase();
+
+    if (!code) return;
+
+    if (code === 'WELCOME10' || code === 'SAVE10') {
+      setAppliedCoupon({ code, discountPercent: 10 });
+    } else if (code === 'OLINBUY15' || code === 'VIP15') {
+      setAppliedCoupon({ code, discountPercent: 15 });
+    } else {
+      setCouponError('Invalid promo code. Try WELCOME10 or OLINBUY15.');
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError(null);
+  };
+
+  const discountAmount = appliedCoupon ? (cartTotal * appliedCoupon.discountPercent) / 100 : 0;
+  const finalTotal = Math.max(0, cartTotal - discountAmount);
+
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden font-sans">
+    <div className={`fixed inset-0 z-50 overflow-hidden font-sans select-none ${isClosing ? 'pointer-events-none' : ''}`}>
       {/* Dimmed backdrop with smooth blur */}
       <div
-        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className={`absolute inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity ${
+          isClosing ? 'animate-fade-out' : 'animate-fade-in'
+        }`}
         onClick={() => setIsCartOpen(false)}
       />
 
-      <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        {/* Slide-over Drawer Container */}
-        <div className="w-screen max-w-md bg-white flex flex-col shadow-2xl border-l border-slate-200 animate-in slide-in-from-right duration-300">
+      <div className="absolute inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
+        {/* Slide-over Drawer Container (Light Theme) */}
+        <div className={`w-screen max-w-md bg-white text-slate-900 flex flex-col shadow-2xl border-l border-slate-200 ${
+          isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'
+        }`}>
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] px-5 py-4 text-white flex items-center justify-between shadow-md border-b border-slate-800 shrink-0">
+          <div className="bg-slate-900 px-5 py-4 text-white flex items-center justify-between shadow-md border-b border-slate-800 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shadow-inner">
                 <ShoppingBag className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-heading text-base font-extrabold tracking-tight flex items-center gap-2">
-                  My Shopping Bag
+                <h2 className="font-heading text-base font-extrabold tracking-tight flex items-center gap-2 text-white">
+                  Shopping Bag
                   {totalItemCount > 0 && (
-                    <span className="text-xs font-mono font-bold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-mono font-bold bg-[#FFA41C] text-black px-2 py-0.5 rounded-full shadow-sm">
                       {totalItemCount}
                     </span>
                   )}
                 </h2>
-                <p className="text-[10px] text-slate-400 font-mono tracking-wider uppercase">
-                  Olinbuy Storefront
+                <p className="text-[10px] text-slate-400 font-mono tracking-widest uppercase flex items-center gap-1 mt-0.5">
+                  <Sparkles className="w-2.5 h-2.5 text-amber-400" /> OLINBUY STOREFRONT
                 </p>
               </div>
             </div>
@@ -84,13 +148,13 @@ export default function CartDrawer() {
 
           {/* Free Shipping Progress Bar */}
           {cartItems.length > 0 && (
-            <div className="bg-slate-50 border-b border-slate-200 px-5 py-3 shrink-0">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1.5">
+            <div className="bg-slate-50/90 border-b border-slate-200/80 px-5 py-3 shrink-0 animate-fade-in">
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1.5">
                 <span className="flex items-center gap-1.5">
-                  <Truck className="w-4 h-4 text-amber-500" />
+                  <Truck className="w-4 h-4 text-[#ff6b00]" />
                   {remainingForFreeShipping === 0 ? (
                     <span className="text-emerald-700 font-extrabold flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> You unlocked FREE Express Delivery!
+                      <Sparkles className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> Unlocked FREE Express Delivery!
                     </span>
                   ) : (
                     <span>
@@ -99,12 +163,12 @@ export default function CartDrawer() {
                   )}
                 </span>
               </div>
-              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-slate-200/80 rounded-full overflow-hidden p-0.5">
                 <div
                   className={`h-full transition-all duration-500 rounded-full ${
                     remainingForFreeShipping === 0
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                      : 'bg-gradient-to-r from-amber-400 to-orange-400'
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-sm'
+                      : 'bg-gradient-to-r from-amber-400 to-orange-400 shadow-sm'
                   }`}
                   style={{ width: `${freeShippingProgress}%` }}
                 />
@@ -113,17 +177,17 @@ export default function CartDrawer() {
           )}
 
           {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto p-5 divide-y divide-slate-100">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 no-scrollbar">
             {cartItems.length === 0 ? (
               /* Empty Cart View */
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 select-none space-y-4">
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 animate-pop-in">
                 <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 shadow-inner">
                   <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-800">Your bag is empty</h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-[240px] leading-relaxed">
-                    Discover our latest techwear & catalog drops and add your favorite pieces!
+                    Explore our streetwear drops, techwear collection, and trending items!
                   </p>
                 </div>
                 <button
@@ -138,81 +202,88 @@ export default function CartDrawer() {
                 </button>
               </div>
             ) : (
-              /* Items List */
+              /* Items Cards */
               cartItems.map((item) => {
                 const imageUrl = item.product.images?.[0] || item.product.variants?.[0]?.image || null;
                 const itemTotal = item.price * item.quantity;
 
                 return (
-                  <div key={item.variantId} className="py-4 first:pt-0 flex gap-4 items-start group">
-                    {/* Thumbnail */}
-                    <div className="w-20 h-20 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shrink-0 flex items-center justify-center relative">
+                  <div 
+                    key={item.variantId} 
+                    className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 hover:bg-white hover:shadow-md transition-all duration-200 flex gap-3.5 items-start group relative shadow-2xs animate-pop-in"
+                  >
+                    {/* Item Thumbnail */}
+                    <div className="w-20 h-20 bg-white rounded-xl overflow-hidden shrink-0 border border-slate-200/80 flex items-center justify-center relative shadow-2xs">
                       {imageUrl ? (
                         <img
                           src={imageUrl}
                           alt={item.product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
                         <Package className="w-7 h-7 text-slate-300 stroke-[1.5]" />
                       )}
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <Link
-                          href={`/products/${item.product._id}`}
-                          onClick={() => setIsCartOpen(false)}
-                          className="text-xs font-bold text-slate-900 hover:text-[#ff6b00] line-clamp-2 transition-colors leading-tight"
-                        >
-                          {item.product.name}
-                        </Link>
-                        <button
-                          onClick={() => removeFromCart(item.variantId)}
-                          className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
-                          aria-label="Remove item"
-                          title="Remove item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                    {/* Item Details */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <Link
+                            href={`/products/${item.product._id}`}
+                            onClick={() => setIsCartOpen(false)}
+                            className="text-xs font-bold text-slate-900 hover:text-[#ff6b00] line-clamp-2 transition-colors leading-tight"
+                          >
+                            {item.product.name}
+                          </Link>
+                          <button
+                            onClick={() => removeFromCart(item.variantId)}
+                            className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+                            aria-label="Remove item"
+                            title="Remove item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {item.sku && (
+                          <span className="inline-block text-[10px] text-slate-400 font-mono mt-0.5">
+                            SKU: {item.sku}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Variant SKU tag if present */}
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                        SKU: {item.sku}
-                      </p>
-
-                      <div className="mt-2.5 flex items-center justify-between gap-2">
-                        {/* Quantity controls */}
-                        <div className="flex items-center border border-slate-200 rounded-lg bg-slate-50">
+                      {/* Quantity & Price Row */}
+                      <div className="mt-2.5 flex items-end justify-between gap-2">
+                        {/* Quantity Controller */}
+                        <div className="flex items-center border border-slate-200 rounded-lg bg-white shadow-2xs">
                           <button
                             onClick={() => updateQuantity(item.variantId, -1)}
-                            className="p-1 hover:bg-slate-200 text-slate-600 rounded-l-lg transition-colors cursor-pointer"
+                            className="p-1 hover:bg-slate-100 text-slate-600 rounded-l transition-colors cursor-pointer"
                             aria-label="Decrease quantity"
                           >
-                            <Minus className="w-3.5 h-3.5" />
+                            <Minus className="w-3 h-3" />
                           </button>
-                          <span className="px-2.5 text-xs font-extrabold text-slate-900 select-none">
+                          <span className="px-2.5 text-xs font-extrabold text-slate-900">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.variantId, 1)}
-                            className="p-1 hover:bg-slate-200 text-slate-600 rounded-r-lg transition-colors cursor-pointer"
+                            className="p-1 hover:bg-slate-100 text-slate-600 rounded-r transition-colors cursor-pointer"
                             aria-label="Increase quantity"
                           >
-                            <Plus className="w-3.5 h-3.5" />
+                            <Plus className="w-3 h-3" />
                           </button>
                         </div>
 
-                        {/* Price */}
+                        {/* Price Breakdown */}
                         <div className="text-right">
                           <span className="text-xs font-black text-slate-900">
                             {currencySymbol}{itemTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </span>
                           {item.quantity > 1 && (
-                            <span className="block text-[10px] text-slate-400 font-medium">
-                              {currencySymbol}{item.price.toLocaleString('en-US')} each
+                            <span className="block text-[9px] text-slate-400 font-medium">
+                              {currencySymbol}{item.price.toLocaleString('en-US')} ea
                             </span>
                           )}
                         </div>
@@ -224,43 +295,107 @@ export default function CartDrawer() {
             )}
           </div>
 
-          {/* Footer Subtotal & Checkout Actions */}
+          {/* Footer & Checkout Area */}
           {cartItems.length > 0 && (
-            <div className="border-t border-slate-200 bg-slate-50/80 p-5 shadow-inner shrink-0 space-y-3">
-              {/* Price Subtotal Breakdown */}
+            <div className="border-t border-slate-200/80 bg-slate-50/90 backdrop-blur-md p-4 sm:p-5 shrink-0 space-y-4 shadow-lg animate-slide-down">
+              
+              {/* Promo Code Input Block */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-xl text-xs text-emerald-700 font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-emerald-600" /> Code <strong className="text-slate-900">{appliedCoupon.code}</strong> ({appliedCoupon.discountPercent}% OFF)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="text-slate-500 hover:text-rose-600 text-[10px] underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Promo code (e.g. WELCOME10)"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        className="w-full bg-white border border-slate-200 text-slate-900 pl-8 pr-3 py-2 rounded-xl text-xs focus:outline-none focus:border-[#ff6b00] placeholder:text-slate-400 uppercase font-mono shadow-2xs"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+                    >
+                      Apply
+                    </button>
+                  </form>
+                )}
+                {couponError && (
+                  <p className="text-[10px] text-rose-600 font-medium pl-1">{couponError}</p>
+                )}
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="space-y-1.5 pt-1 text-xs">
+                <div className="flex justify-between items-center text-slate-500">
                   <span>Subtotal ({totalItemCount} {totalItemCount === 1 ? 'item' : 'items'})</span>
-                  <span className="font-extrabold text-slate-900 text-sm">
+                  <span className="font-bold text-slate-900">
                     {currencySymbol}{cartTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-[11px] text-slate-400">
-                  <span>Taxes & Shipping</span>
-                  <span>Calculated at checkout</span>
+
+                {appliedCoupon && (
+                  <div className="flex justify-between items-center text-emerald-600 font-semibold">
+                    <span>Discount ({appliedCoupon.discountPercent}%)</span>
+                    <span>
+                      -{currencySymbol}{discountAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center text-slate-500">
+                  <span>Delivery Fee</span>
+                  <span className="font-bold text-emerald-600">
+                    {remainingForFreeShipping === 0 ? 'FREE Express' : 'Calculated at Address'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-slate-200/80 text-sm">
+                  <span className="font-extrabold text-slate-900">Estimated Total</span>
+                  <span className="font-black text-slate-900 text-base">
+                    {currencySymbol}{finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
                 </div>
               </div>
 
-              {/* Checkout CTAs */}
+              {/* Primary Action Button -> Directs to Delivery Address / Checkout */}
               <button
                 onClick={() => {
                   setIsCartOpen(false);
                   router.push('/checkout');
                 }}
-                className="w-full bg-[#FFA41C] hover:bg-[#FFB542] text-slate-950 py-3 rounded-xl text-xs font-black tracking-wider transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer border border-[#e49319] active:scale-95 flex items-center justify-center gap-2"
+                className="w-full bg-[#FFA41C] hover:bg-[#FFB542] text-slate-950 py-3.5 rounded-xl text-xs font-black tracking-wider transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer border border-[#e49319] active:scale-[0.98] flex items-center justify-center gap-2 group"
               >
-                <span>Proceed to Checkout</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Proceed to Delivery & Checkout</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
-              {/* Security Badges */}
-              <div className="pt-2 flex items-center justify-center gap-3 text-[10px] font-extrabold text-slate-500 select-none">
+              {/* Trust & Guarantee Icons */}
+              <div className="pt-1 flex items-center justify-center gap-3 text-[10px] text-slate-500 font-semibold select-none">
                 <span className="flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-amber-500 fill-amber-500" /> Express Checkout
+                  <Zap className="w-3 h-3 text-amber-500 fill-amber-500" /> Fast Shipping
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> SSL Secured
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> 256-Bit SSL Encrypted
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <RotateCcw className="w-3 h-3 text-cyan-600" /> Easy Returns
                 </span>
               </div>
             </div>

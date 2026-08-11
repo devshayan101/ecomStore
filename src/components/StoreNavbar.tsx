@@ -39,12 +39,46 @@ export default function StoreNavbar({
   const { wishlistCount } = useWishlist();
   const { data: session } = useSession();
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [renderMobileSearch, setRenderMobileSearch] = useState(false);
+  const [isMobileSearchClosing, setIsMobileSearchClosing] = useState(false);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [renderMobileMenu, setRenderMobileMenu] = useState(false);
+  const [isMobileMenuClosing, setIsMobileMenuClosing] = useState(false);
+
   const [localSearch, setLocalSearch] = React.useState(searchTerm);
 
   React.useEffect(() => {
     setLocalSearch(searchTerm);
   }, [searchTerm]);
+
+  React.useEffect(() => {
+    if (isMobileSearchOpen) {
+      setRenderMobileSearch(true);
+      setIsMobileSearchClosing(false);
+    } else if (renderMobileSearch) {
+      setIsMobileSearchClosing(true);
+      const timer = setTimeout(() => {
+        setRenderMobileSearch(false);
+        setIsMobileSearchClosing(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobileSearchOpen]);
+
+  React.useEffect(() => {
+    if (isMobileMenuOpen) {
+      setRenderMobileMenu(true);
+      setIsMobileMenuClosing(false);
+    } else if (renderMobileMenu) {
+      setIsMobileMenuClosing(true);
+      const timer = setTimeout(() => {
+        setRenderMobileMenu(false);
+        setIsMobileMenuClosing(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobileMenuOpen]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,8 +239,10 @@ export default function StoreNavbar({
       </div>
 
       {/* Mobile Search Expandable Bar */}
-      {isMobileSearchOpen && (
-        <div className="md:hidden px-4 pb-3 pt-1 border-t border-slate-800">
+      {renderMobileSearch && (
+        <div className={`md:hidden px-4 pb-3 pt-1 border-t border-slate-800 overflow-hidden origin-top ${
+          isMobileSearchClosing ? 'animate-menu-exit' : 'animate-menu-enter'
+        }`}>
           <form
             onSubmit={handleSearchSubmit}
             className="flex bg-slate-900 rounded-full border border-slate-700 overflow-hidden h-9 p-0.5"
@@ -259,8 +295,10 @@ export default function StoreNavbar({
       </nav>
 
       {/* Mobile Drawer Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#0f172a] border-t border-slate-800 px-4 py-4 space-y-3 animate-in slide-in-from-top-2">
+      {renderMobileMenu && (
+        <div className={`md:hidden bg-[#0f172a] border-t border-slate-800 px-4 py-4 space-y-3 overflow-hidden origin-top ${
+          isMobileMenuClosing ? 'animate-menu-exit' : 'animate-menu-enter'
+        }`}>
           <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">Navigation Menu</div>
           <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-200">
             <button
