@@ -28,6 +28,14 @@ interface Order {
     postcode: string;
     country: string;
   };
+  billing_address?: {
+    recipient_name?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    postcode?: string;
+    country?: string;
+  } | null;
   total_amount: number;
   payment_status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
   status: 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
@@ -281,6 +289,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <p>{order.shipping_address.country}</p>
                 </div>
               </div>
+
+              {order.billing_address && (
+                <div className="space-y-3">
+                  <h3 className="font-heading text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 select-none">
+                    <CreditCard className="w-4 h-4" /> Billing Address
+                  </h3>
+                  <div className="border border-slate-200 rounded-xl p-4 text-xs text-slate-600 space-y-1">
+                    <p className="font-bold text-slate-800">{order.billing_address.recipient_name || order.shipping_address.recipient_name}</p>
+                    <p>{order.billing_address.street}</p>
+                    <p>{order.billing_address.city}, {order.billing_address.state} - {order.billing_address.postcode}</p>
+                    <p>{order.billing_address.country}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Payment Details info */}
               <div className="space-y-3">

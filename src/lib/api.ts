@@ -110,6 +110,14 @@ export interface CheckoutPayload {
       country: string;
     };
   };
+  billing_address?: {
+    recipient_name?: string;
+    street: string;
+    city: string;
+    state: string;
+    postcode: string;
+    country: string;
+  };
   items: Array<{
     variant_id: string;
     sku: string;

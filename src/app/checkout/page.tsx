@@ -243,6 +243,14 @@ function CheckoutContent() {
           country: formData.country,
         },
       },
+      billing_address: !sameAsShipping ? {
+        recipient_name: billingData.name || formData.name,
+        street: billingData.street,
+        city: billingData.city,
+        state: billingData.state,
+        postcode: billingData.postcode,
+        country: billingData.country,
+      } : undefined,
       items: cartItems.map((item) => ({
         variant_id: item.variantId,
         sku: item.sku,
@@ -923,15 +931,15 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Delivery Address Summary Card */}
-              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-2">
+              {/* Delivery & Billing Address Summary Card */}
+              <div className="bg-white rounded-2xl border border-[#e2e2e3] p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-[#ff6b00]" /> Delivering To
                   </h3>
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(1)}
                     className="text-xs text-[#ff6b00] font-bold hover:underline"
                   >
                     Edit
@@ -941,6 +949,27 @@ function CheckoutContent() {
                   <p className="font-bold text-slate-900">{formData.name} ({formData.phone})</p>
                   <p>{formData.street}, {formData.city}, {formData.state} - {formData.postcode}, {formData.country}</p>
                 </div>
+
+                {!sameAsShipping && (
+                  <div className="border-t border-slate-100 pt-3 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4 text-[#ff6b00]" /> Billing Address
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setStep(1)}
+                        className="text-xs text-[#ff6b00] font-bold hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="text-xs text-slate-700 leading-relaxed pt-0.5">
+                      <p className="font-bold text-slate-900">{billingData.name || formData.name}</p>
+                      <p>{billingData.street}, {billingData.city}, {billingData.state} - {billingData.postcode}, {billingData.country}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Step 2 Actions */}
