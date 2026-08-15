@@ -101,7 +101,7 @@ function HomeContent() {
     } else {
       params.delete('search');
     }
-    router.replace(`/?${params.toString()}`);
+    router.replace(`/?${params.toString()}`, { scroll: false });
     requestAnimationFrame(() => {
       document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
     });
