@@ -28,20 +28,20 @@ export default function StoreTrendingScroller({ products, onSelectProduct, curre
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 relative group/trending-section">
-      <div className="bg-white p-5 sm:p-8 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
+    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 mb-3 sm:mb-12 relative group/trending-section">
+      <div className="bg-white p-3 pt-3 pb-2 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
         {/* Decorative Left Border line */}
         <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-gradient-to-b from-blue-600 to-indigo-600"></div>
 
         {/* Section Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600">
-              <Sparkles className="w-5 h-5 fill-blue-100" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-blue-50 p-2 sm:p-2.5 rounded-xl text-blue-600">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-blue-100" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Inspired by your shopping trend</h2>
-              <p className="text-xs sm:text-sm text-slate-500">Curated recommendations based on your recent activity</p>
+              <h2 className="text-[calc(1rem+0.8vw)] sm:text-2xl font-black text-slate-900 tracking-tight">Inspired by your shopping trend</h2>
+              <p className="text-[calc(0.65rem+0.4vw)] sm:text-sm text-slate-500">Curated recommendations based on your recent activity</p>
             </div>
           </div>
         </div>

@@ -87,7 +87,7 @@ export default function StoreFeatureGrid({
   }
 
   return (
-    <section className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 -mt-12 sm:-mt-36 lg:-mt-22 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <section className="relative z-30 max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 -mt-6 sm:-mt-36 lg:-mt-22 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
       {displayPromos.map((promo, idx) => {
         const bgImage = promo.image || (promo as any).bg;
         const targetCategory = promo.category || 'all';

@@ -5,8 +5,8 @@ import { Truck, RotateCcw, Headset, ShieldCheck } from 'lucide-react';
 
 export default function StoreValueProps() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 my-8 sm:my-12">
-      <div className="bg-white py-6 px-6 sm:px-10 border border-gray-200 rounded-xl grid grid-cols-2 md:grid-cols-4 gap-6 shadow-sm">
+    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 my-4 sm:my-12">
+      <div className="bg-white py-3 sm:py-6 px-3 sm:px-10 border border-gray-200 rounded-xl grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-[#0058be] rounded-full flex items-center justify-center shrink-0">
             <Truck className="w-5 h-5 sm:w-6 sm:h-6" />

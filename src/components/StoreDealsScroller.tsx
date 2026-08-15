@@ -51,22 +51,22 @@ export default function StoreDealsScroller({ products, onSelectProduct, currency
   const padZero = (num: number) => String(num).padStart(2, '0');
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12 relative group/section">
-      <div className="bg-white p-5 sm:p-8 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
+    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 mb-3 sm:mb-12 relative group/section">
+      <div className="bg-white p-3 pt-3 pb-2 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
         {/* Decorative Top Accent */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"></div>
 
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            <div className="bg-red-50 p-2.5 rounded-xl text-red-600 animate-pulse">
-              <Flame className="w-5 h-5 fill-red-600" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-8">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <div className="bg-red-50 p-2 sm:p-2.5 rounded-xl text-red-600 animate-pulse">
+              <Flame className="w-4 h-4 sm:w-5 sm:h-5 fill-red-600" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Today's Hot Deals</h2>
-              <p className="text-xs sm:text-sm text-slate-500">Super savings on our premium, top-selling gear</p>
+              <h2 className="text-[calc(1rem+0.8vw)] sm:text-2xl font-black text-slate-900 tracking-tight">Today's Hot Deals</h2>
+              <p className="text-[calc(0.65rem+0.4vw)] sm:text-sm text-slate-500">Super savings on our premium, top-selling gear</p>
             </div>
-            <span className="text-xs text-red-600 font-extrabold bg-red-50 border border-red-100 px-3 py-1 rounded-full uppercase tracking-wider">
+            <span className="text-[calc(0.55rem+0.3vw)] sm:text-xs text-red-600 font-extrabold bg-red-50 border border-red-100 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full uppercase tracking-wider">
               Limited Stock
             </span>
           </div>

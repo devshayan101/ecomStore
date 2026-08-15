@@ -240,7 +240,6 @@ export default function StoreProductVideos({
   const getProductForVideo = (videoId: string) => {
     const video = SHORT_VIDEOS_DATA.find(v => v.id === videoId);
     if (!video) return null;
-    
     // Attempt match via category or generic product mapping
     const matched = products.find(p => p.category_id === categories.find(c => c.slug === video.category)?._id) 
       || products[0];
@@ -248,8 +247,8 @@ export default function StoreProductVideos({
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-      <div className="bg-white text-slate-900 p-5 sm:p-8 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
+    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 mb-6 sm:mb-12">
+      <div className="bg-white text-slate-900 p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
         {/* Decorative Left Border line */}
         <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-gradient-to-b from-purple-600 to-indigo-600"></div>
 
@@ -258,42 +257,42 @@ export default function StoreProductVideos({
         <div className="absolute bottom-[-20%] right-[-10%] w-[40%] aspect-square rounded-full bg-purple-500/5 blur-[100px] pointer-events-none"></div>
 
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600">
-              <TrendingUp className="w-5 h-5" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-6 mb-4 sm:mb-8 relative z-10">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="bg-blue-50 p-2 sm:p-2.5 rounded-xl text-blue-600">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <h2 className="text-lg sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
                 Trending Product Shorts
-                <span className="text-[10px] uppercase font-bold tracking-widest bg-gradient-to-r from-red-500 to-orange-500 text-white py-0.5 px-2 rounded-full">
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest bg-gradient-to-r from-red-500 to-orange-500 text-white py-0.5 px-2 rounded-full">
                   Live
                 </span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500">Quick video walkthroughs and customer reviews</p>
+              <p className="text-[11px] sm:text-sm text-slate-500">Watch short showcase videos and buy directly</p>
             </div>
           </div>
 
-          {/* Category Tabs inside Video Section */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar max-w-full">
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                activeTab === 'all' 
-                  ? 'bg-slate-900 text-white shadow-lg' 
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800'
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                activeTab === 'all'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              All
+              All Shorts
             </button>
-            {categories.slice(0, 5).map(cat => (
+            {categories.map((cat, idx) => (
               <button
-                key={cat._id}
+                key={`vid-cat-${cat._id || cat.slug || idx}-${idx}`}
                 onClick={() => setActiveTab(cat.slug)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                  activeTab === cat.slug 
-                    ? 'bg-blue-600 text-white shadow-lg' 
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800'
+                className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  activeTab === cat.slug
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {cat.name}
@@ -304,7 +303,7 @@ export default function StoreProductVideos({
 
         {/* Video Thumbnail list */}
         {filteredVideos.length === 0 ? (
-          <div className="text-center py-16 text-sm text-slate-400 border border-dashed border-slate-200 rounded-2xl">
+          <div className="text-center py-12 sm:py-16 text-xs sm:text-sm text-slate-400 border border-dashed border-slate-200 rounded-2xl">
             No product videos available for this category yet.
           </div>
         ) : (
@@ -312,22 +311,22 @@ export default function StoreProductVideos({
             {/* Scroll Navigation Buttons */}
             <button
               onClick={() => scrollShorts('left')}
-              className="absolute left-[-18px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200 opacity-0 group-hover/shorts-section:opacity-100"
+              className="absolute left-[-12px] sm:left-[-18px] top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200 opacity-0 group-hover/shorts-section:opacity-100"
               aria-label="Scroll left"
             >
-              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             </button>
             <button
               onClick={() => scrollShorts('right')}
-              className="absolute right-[-18px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200 opacity-0 group-hover/shorts-section:opacity-100"
+              className="absolute right-[-12px] sm:right-[-18px] top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-slate-50 active:scale-95 transition-all duration-200 opacity-0 group-hover/shorts-section:opacity-100"
               aria-label="Scroll right"
             >
-              <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             </button>
 
             <div
               ref={scrollRef}
-              className="flex gap-4 overflow-x-auto pb-4 no-scrollbar scroll-smooth snap-x snap-mandatory relative z-10"
+              className="flex gap-2.5 sm:gap-4 overflow-x-auto pb-2 sm:pb-4 no-scrollbar scroll-smooth snap-x snap-mandatory relative z-10"
             >
               {filteredVideos.map(vid => {
                 const matchedProduct = getProductForVideo(vid.id);
@@ -339,7 +338,7 @@ export default function StoreProductVideos({
                       setActiveVideo(vid);
                       setIsMuted(false);
                     }}
-                    className="group relative w-[170px] sm:w-[200px] md:w-[220px] aspect-[9/16] shrink-0 snap-start rounded-2xl overflow-hidden bg-slate-950 border border-slate-100 cursor-pointer hover:border-blue-500/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                    className="group relative w-[135px] sm:w-[200px] md:w-[220px] aspect-[9/16] shrink-0 snap-start rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 border border-slate-100 cursor-pointer hover:border-blue-500/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                   >
                     {/* Thumbnail Image */}
                     <img
@@ -352,32 +351,32 @@ export default function StoreProductVideos({
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
 
                     {/* View count tag */}
-                    <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px] font-bold text-slate-300">
-                      <Eye className="w-3 h-3 text-blue-400" />
+                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-slate-900/80 backdrop-blur-md px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-slate-300">
+                      <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400" />
                       <span>{vid.views}</span>
                     </div>
 
                     {/* Play Button Icon Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white scale-90 group-hover:scale-100 group-hover:bg-white group-hover:text-slate-950 transition-all duration-300">
-                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                      <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white scale-90 group-hover:scale-100 group-hover:bg-white group-hover:text-slate-950 transition-all duration-300">
+                        <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
                       </div>
                     </div>
 
                     {/* Title & Info Block */}
-                    <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5">
-                      <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-400">
+                    <div className="absolute bottom-2.5 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 flex flex-col gap-1 sm:gap-1.5">
+                      <p className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-blue-400">
                         {vid.category}
                       </p>
-                      <p className="text-xs font-bold line-clamp-2 text-white leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold line-clamp-2 text-white leading-tight">
                         {vid.title}
                       </p>
                       
                       {/* Linked Product price tag if matched */}
                       {matchedProduct && (
-                        <div className="mt-1 bg-black/45 backdrop-blur-md py-1 px-2.5 rounded-lg border border-white/5 flex items-center justify-between text-[11px]">
+                        <div className="mt-0.5 sm:mt-1 bg-black/45 backdrop-blur-md py-0.5 sm:py-1 px-1.5 sm:px-2.5 rounded-lg border border-white/5 flex items-center justify-between text-[10px] sm:text-[11px]">
                           <span className="truncate text-slate-200 font-medium">{matchedProduct.name}</span>
-                          <span className="font-bold text-orange-400 ml-1.5 shrink-0">
+                          <span className="font-bold text-orange-400 ml-1 sm:ml-1.5 shrink-0">
                             {currencySymbol}{matchedProduct.variants?.[0]?.price}
                           </span>
                         </div>

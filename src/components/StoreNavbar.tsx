@@ -88,27 +88,27 @@ export default function StoreNavbar({
   return (
     <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white shadow-xl border-b border-slate-700/50">
       {/* Main Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3 md:gap-6">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-3 md:gap-6">
         {/* Left Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+            className="md:hidden p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
             aria-label="Toggle navigation"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6 text-amber-400" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
           </button>
 
-          <Link href="/" className="flex items-center gap-2 group select-none">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 font-black flex items-center justify-center text-lg tracking-tighter shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group select-none">
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 font-black flex items-center justify-center text-base sm:text-lg tracking-tighter shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
               O
             </div>
             <div className="flex flex-col">
-              <span className="text-xl md:text-2xl font-black text-white tracking-tight leading-none">
+              <span className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight leading-none">
                 Olin<span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">buy</span>
               </span>
-              <span className="text-[9px] font-mono tracking-widest text-slate-400 uppercase flex items-center gap-1 mt-0.5">
-                <Flame className="w-2.5 h-2.5 text-amber-400" /> OFFICIAL STORE
+              <span className="text-[8px] sm:text-[9px] font-mono tracking-widest text-slate-400 uppercase flex items-center gap-0.5 sm:gap-1 mt-0.5">
+                <Flame className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-amber-400" /> STORE
               </span>
             </div>
           </Link>
@@ -159,14 +159,14 @@ export default function StoreNavbar({
         </form>
 
         {/* Right Actions Cluster */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Mobile Search Toggle */}
           <button
             onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
+            className="md:hidden p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
             aria-label="Search"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4.5 h-4.5" />
           </button>
 
           {/* User Account Button */}
@@ -222,13 +222,13 @@ export default function StoreNavbar({
           {/* Cart Button */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl transition-all cursor-pointer relative"
+            className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/30 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl transition-all cursor-pointer relative"
             aria-label="View Cart"
           >
             <div className="relative">
-              <ShoppingCart className="w-5 h-5 text-amber-400" />
+              <ShoppingCart className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-amber-400" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#FFA41C] text-black font-black text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md border border-slate-900">
+                <span className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 bg-[#FFA41C] text-black font-black text-[9px] sm:text-[10px] w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full flex items-center justify-center shadow-md border border-slate-900">
                   {cartCount}
                 </span>
               )}
@@ -240,12 +240,12 @@ export default function StoreNavbar({
 
       {/* Mobile Search Expandable Bar */}
       {renderMobileSearch && (
-        <div className={`md:hidden px-4 pb-3 pt-1 border-t border-slate-800 overflow-hidden origin-top ${
+        <div className={`md:hidden px-3 pb-2 pt-1 border-t border-slate-800 overflow-hidden origin-top ${
           isMobileSearchClosing ? 'animate-menu-exit' : 'animate-menu-enter'
         }`}>
           <form
             onSubmit={handleSearchSubmit}
-            className="flex bg-slate-900 rounded-full border border-slate-700 overflow-hidden h-9 p-0.5"
+            className="flex bg-slate-900 rounded-full border border-slate-700 overflow-hidden h-8 sm:h-9 p-0.5"
           >
             <input
               type="text"
@@ -256,7 +256,7 @@ export default function StoreNavbar({
             />
             <button
               type="submit"
-              className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-3.5 rounded-full flex items-center justify-center font-bold cursor-pointer"
+              className="bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 px-3 rounded-full flex items-center justify-center font-bold cursor-pointer"
             >
               <Search className="w-3.5 h-3.5" />
             </button>
@@ -265,16 +265,16 @@ export default function StoreNavbar({
       )}
 
       {/* Sub Nav Category Bar (Glassmorphism Dark) */}
-      <nav className="bg-slate-950/60 backdrop-blur-md px-4 sm:px-6 flex items-center h-11 gap-3 border-t border-slate-800/80 overflow-x-auto no-scrollbar text-xs font-medium">
+      <nav className="bg-slate-950/60 backdrop-blur-md px-2.5 sm:px-6 flex items-center h-9 sm:h-11 gap-1.5 sm:gap-3 border-t border-slate-800/80 overflow-x-auto no-scrollbar text-[11px] sm:text-xs font-medium">
         <button
           onClick={() => onSelectCategory('all')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full transition-all whitespace-nowrap shrink-0 ${
+          className={`flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full transition-all whitespace-nowrap shrink-0 ${
             selectedCategory === 'all'
               ? 'bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20'
               : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5" /> All Products
+          <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> All Products
         </button>
         {categories.map((cat, idx) => {
           const isSelected = selectedCategory === cat.slug;

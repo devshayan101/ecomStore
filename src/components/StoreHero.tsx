@@ -107,7 +107,7 @@ export default function StoreHero({ slides = DEFAULT_SLIDES }: StoreHeroProps) {
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-gray-100/90 via-black/30 to-black/50 sm:to-transparent" />
-              <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 w-full h-full flex items-start pt-10 sm:pt-16">
+              <div className="relative z-20 max-w-7xl mx-auto px-2.5 sm:px-6 w-full h-full flex items-start pt-6 sm:pt-16">
                 <div className="max-w-lg sm:max-w-xl flex flex-col gap-2 sm:gap-4 text-white sm:text-gray-900">
                   <h1 
                     className="text-2xl sm:text-4xl lg:text-5xl font-black leading-tight drop-shadow"

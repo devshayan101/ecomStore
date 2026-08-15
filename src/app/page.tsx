@@ -160,21 +160,21 @@ function HomeContent() {
         />
 
         {/* Full Products Section Grid */}
-        <section id="products-section" className="max-w-7xl mx-auto px-4 sm:px-6 my-8">
-          <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200">
+        <section id="products-section" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 my-4 sm:my-8">
+          <div className="flex items-center justify-between mb-4 sm:mb-6 pb-2 border-b border-gray-200">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
                 {categoryQ === 'all'
                   ? 'All Products'
                   : categories.find((c) => c.slug === categoryQ)?.name || 'Products'}
               </h2>
               {searchQ && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
                   Showing results for &quot;{searchQ}&quot;
                 </p>
               )}
             </div>
-            <span className="text-xs text-gray-500 font-medium">
+            <span className="text-[11px] sm:text-xs text-gray-500 font-medium">
               {products.length} {products.length === 1 ? 'item' : 'items'} found
             </span>
           </div>
@@ -185,7 +185,7 @@ function HomeContent() {
               <span className="text-xs font-semibold">Loading Olinbuy catalog...</span>
             </div>
           ) : products.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-lg border border-gray-200">
+            <div className="bg-white p-8 sm:p-12 text-center rounded-lg border border-gray-200">
               <p className="text-sm font-semibold text-gray-600">No products match your criteria.</p>
               <button
                 onClick={() => {
@@ -198,7 +198,7 @@ function HomeContent() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
               {products.map((product) => (
                 <ProductCard
                   key={product._id}
