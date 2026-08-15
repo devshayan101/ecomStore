@@ -249,9 +249,6 @@ export default function StoreProductVideos({
   return (
     <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 mb-6 sm:mb-12">
       <div className="bg-white text-slate-900 p-3 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
-        {/* Decorative Left Border line */}
-        <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-gradient-to-b from-purple-600 to-indigo-600"></div>
-
         {/* Absolute Glowing Blur Backdrops */}
         <div className="absolute top-[-20%] left-[-10%] w-[40%] aspect-square rounded-full bg-blue-500/5 blur-[100px] pointer-events-none"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[40%] aspect-square rounded-full bg-purple-500/5 blur-[100px] pointer-events-none"></div>
