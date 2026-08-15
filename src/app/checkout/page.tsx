@@ -30,6 +30,16 @@ function CheckoutContent() {
   const [shippingRates, setShippingRates] = useState<ShippingRateOption[]>([]);
   const [selectedRate, setSelectedRate] = useState<ShippingRateOption | null>(null);
   const [fetchingRates, setFetchingRates] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number; discount_amount: number } | null>(null);
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('olinbuy_coupon');
+    if (saved) {
+      try {
+        setAppliedCoupon(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
 
   // Address Form State
   const [formData, setFormData] = useState({
@@ -260,6 +270,7 @@ function CheckoutContent() {
       payment_method: paymentMethod,
       shipping_cost: selectedRate?.price || 0,
       shipping_rate_name: selectedRate?.name || 'Standard Shipping',
+      coupon_code: appliedCoupon?.code || undefined,
     };
 
     const token = (session?.user as any)?.accessToken;
@@ -430,12 +441,15 @@ function CheckoutContent() {
     });
 
     const shipping = selectedRate ? selectedRate.price : 0;
-    const totalAmount = isInclusive ? (subtotal + shipping) : (subtotal + totalTax + shipping);
+    const discount = appliedCoupon ? appliedCoupon.discount_amount : 0;
+    const baseTotal = isInclusive ? (subtotal + shipping) : (subtotal + totalTax + shipping);
+    const totalAmount = Math.max(0, baseTotal - discount);
 
     return {
       subtotal,
       tax: totalTax,
       shipping,
+      discount,
       total: totalAmount,
       isInclusive,
       isEnabled,
@@ -1024,6 +1038,12 @@ function CheckoutContent() {
                     <span>Subtotal</span>
                     <span>₹{pricing.subtotal.toLocaleString('en-IN')}</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-emerald-600">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span>-₹{pricing.discount.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
                   {pricing.isEnabled && pricing.tax > 0 && (
                     <div className="flex justify-between text-slate-600 font-bold">
                       <span>Tax (GST/VAT) {pricing.isInclusive && '(Included)'}</span>

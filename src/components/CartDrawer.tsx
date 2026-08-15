@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/lib/CartContext';
 import { useRouter } from 'next/navigation';
-import { fetchStorefrontSettings } from '@/lib/api';
+import { fetchStorefrontSettings, validateCouponApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function CartDrawer() {
@@ -34,8 +34,9 @@ export default function CartDrawer() {
 
   const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercent: number } | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number; discount_amount: number } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
     fetchStorefrontSettings()
@@ -46,6 +47,15 @@ export default function CartDrawer() {
         }
       })
       .catch(console.error);
+
+    const savedCoupon = sessionStorage.getItem('olinbuy_coupon');
+    if (savedCoupon) {
+      try {
+        setAppliedCoupon(JSON.parse(savedCoupon));
+      } catch (e) {
+        console.error('Failed to parse saved coupon');
+      }
+    }
   }, []);
 
   const [shouldRender, setShouldRender] = useState(isCartOpen);
@@ -75,19 +85,33 @@ export default function CartDrawer() {
   const freeShippingProgress = Math.min(100, (cartTotal / freeShippingThreshold) * 100);
 
   // Coupon application logic
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError(null);
     const code = couponCode.trim().toUpperCase();
 
     if (!code) return;
 
-    if (code === 'WELCOME10' || code === 'SAVE10') {
-      setAppliedCoupon({ code, discountPercent: 10 });
-    } else if (code === 'OLINBUY15' || code === 'VIP15') {
-      setAppliedCoupon({ code, discountPercent: 15 });
-    } else {
-      setCouponError('Invalid promo code. Try WELCOME10 or OLINBUY15.');
+    setValidatingCoupon(true);
+    try {
+      const result = await validateCouponApi(code, cartTotal);
+      setAppliedCoupon({
+        code: result.code,
+        discount_type: result.discount_type,
+        discount_value: result.discount_value,
+        discount_amount: result.discount_amount,
+      });
+      // Store applied coupon in sessionStorage for checkout
+      sessionStorage.setItem('olinbuy_coupon', JSON.stringify({
+        code: result.code,
+        discount_type: result.discount_type,
+        discount_value: result.discount_value,
+        discount_amount: result.discount_amount,
+      }));
+    } catch (err: any) {
+      setCouponError(err.message || 'Invalid promo code');
+    } finally {
+      setValidatingCoupon(false);
     }
   };
 
@@ -95,9 +119,10 @@ export default function CartDrawer() {
     setAppliedCoupon(null);
     setCouponCode('');
     setCouponError(null);
+    sessionStorage.removeItem('olinbuy_coupon');
   };
 
-  const discountAmount = appliedCoupon ? (cartTotal * appliedCoupon.discountPercent) / 100 : 0;
+  const discountAmount = appliedCoupon ? appliedCoupon.discount_amount : 0;
   const finalTotal = Math.max(0, cartTotal - discountAmount);
 
   return (
@@ -304,7 +329,7 @@ export default function CartDrawer() {
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-xl text-xs text-emerald-700 font-bold">
                     <span className="flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-emerald-600" /> Code <strong className="text-slate-900">{appliedCoupon.code}</strong> ({appliedCoupon.discountPercent}% OFF)
+                      <Tag className="w-3.5 h-3.5 text-emerald-600" /> Code <strong className="text-slate-900">{appliedCoupon.code}</strong> ({appliedCoupon.discount_type === 'PERCENTAGE' ? `${appliedCoupon.discount_value}% OFF` : `${currencySymbol}${appliedCoupon.discount_value} OFF`})
                     </span>
                     <button
                       type="button"
@@ -328,9 +353,10 @@ export default function CartDrawer() {
                     </div>
                     <button
                       type="submit"
-                      className="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+                      disabled={validatingCoupon}
+                      className="bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
                     >
-                      Apply
+                      {validatingCoupon ? '...' : 'Apply'}
                     </button>
                   </form>
                 )}
@@ -350,7 +376,7 @@ export default function CartDrawer() {
 
                 {appliedCoupon && (
                   <div className="flex justify-between items-center text-emerald-600 font-semibold">
-                    <span>Discount ({appliedCoupon.discountPercent}%)</span>
+                    <span>Discount ({appliedCoupon.code})</span>
                     <span>
                       -{currencySymbol}{discountAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>

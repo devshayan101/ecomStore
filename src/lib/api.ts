@@ -127,6 +127,7 @@ export interface CheckoutPayload {
   payment_method: 'STRIPE' | 'RAZORPAY' | 'COD';
   shipping_cost?: number;
   shipping_rate_name?: string;
+  coupon_code?: string;
 }
 
 export async function checkout(payload: CheckoutPayload, token?: string): Promise<any> {
@@ -248,19 +249,40 @@ export async function fetchShippingRates(payload: {
   totalWeight: number;
   subtotal: number;
 }): Promise<ShippingRateOption[]> {
-  const res = await fetch(`${API_BASE}/shipping/rates`, {
+  const res = await fetch(`${API_BASE}/shipping-rates`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ country: payload.destCountry, state: payload.destState, subtotal: payload.subtotal }),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch shipping rates');
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to fetch shipping rates');
   }
   const data = await res.json();
   return data.rates || [];
 }
+
+export interface ValidatedCouponResponse {
+  code: string;
+  discount_type: 'PERCENTAGE' | 'FIXED';
+  discount_value: number;
+  discount_amount: number;
+  min_order_amount: number;
+}
+
+export async function validateCouponApi(code: string, cart_subtotal: number): Promise<ValidatedCouponResponse> {
+  const res = await fetch(`${API_BASE}/coupons/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, cart_subtotal }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Invalid or expired coupon');
+  }
+  return res.json();
+}
+
 
 // --- Storefront Reviews API ---
 
