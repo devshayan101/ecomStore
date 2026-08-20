@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Script from 'next/script';
 import { useCart } from '@/lib/CartContext';
-import { checkout, verifyRazorpayPayment, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings, fetchShippingRates, ShippingRateOption } from '@/lib/api';
+import { checkout, verifyRazorpayPayment, CheckoutPayload, fetchStorefrontSettings, StorefrontSettings, fetchShippingRates, ShippingRateOption, validateCouponApi } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, CreditCard, Gift, Loader2, Package, Truck, Smartphone, ShoppingBag, MapPin, Check, Plus, Minus, Trash2, ShieldCheck, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -36,10 +36,30 @@ function CheckoutContent() {
     const saved = sessionStorage.getItem('olinbuy_coupon');
     if (saved) {
       try {
-        setAppliedCoupon(JSON.parse(saved));
-      } catch (e) {}
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.code) {
+          validateCouponApi(parsed.code, cartTotal)
+            .then((res) => {
+              const freshCoupon = {
+                code: res.code,
+                discount_type: res.discount_type,
+                discount_value: res.discount_value,
+                discount_amount: res.discount_amount,
+              };
+              setAppliedCoupon(freshCoupon);
+              sessionStorage.setItem('olinbuy_coupon', JSON.stringify(freshCoupon));
+            })
+            .catch(() => {
+              setAppliedCoupon(null);
+              sessionStorage.removeItem('olinbuy_coupon');
+            });
+        }
+      } catch (e) {
+        setAppliedCoupon(null);
+        sessionStorage.removeItem('olinbuy_coupon');
+      }
     }
-  }, []);
+  }, [cartTotal]);
 
   // Address Form State
   const [formData, setFormData] = useState({
