@@ -47,6 +47,8 @@ function HomeContent() {
     setSearchTerm(searchQ);
   }, [searchQ]);
 
+  const [productVideos, setProductVideos] = useState<any[]>([]);
+
   // Fetch settings
   useEffect(() => {
     fetchStorefrontSettings()
@@ -58,6 +60,7 @@ function HomeContent() {
         if (settings?.content) {
           if (settings.content.heroSlides) setHeroSlides(settings.content.heroSlides);
           if (settings.content.promotionCards) setPromotionCards(settings.content.promotionCards);
+          if (settings.content.productVideos) setProductVideos(settings.content.productVideos);
         }
       })
       .catch((err) => console.error('Error fetching settings:', err));
@@ -155,6 +158,7 @@ function HomeContent() {
         <StoreProductVideos
           products={products}
           categories={categories}
+          productVideos={productVideos}
           selectedCategory={categoryQ}
           currencySymbol={currencySymbol}
         />

@@ -221,6 +221,7 @@ export interface StorefrontSettings {
   content?: {
     heroSlides: any[];
     promotionCards: any[];
+    productVideos?: any[];
   };
 }
 

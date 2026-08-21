@@ -78,9 +78,23 @@ const SHORT_VIDEOS_DATA = [
   }
 ];
 
+export interface ProductVideoItem {
+  id: string;
+  title: string;
+  category: string;
+  videoUrl: string;
+  thumbnail: string;
+  views?: string;
+  likes?: number;
+  duration?: string;
+  productId?: string;
+  active?: boolean;
+}
+
 interface StoreProductVideosProps {
   products: Product[];
   categories: Category[];
+  productVideos?: ProductVideoItem[];
   selectedCategory?: string; // category slug from homepage state
   currencySymbol?: string;
 }
@@ -88,12 +102,18 @@ interface StoreProductVideosProps {
 export default function StoreProductVideos({ 
   products, 
   categories, 
+  productVideos,
   selectedCategory = 'all',
   currencySymbol = '₹' 
 }: StoreProductVideosProps) {
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('all');
-  const [activeVideo, setActiveVideo] = useState<typeof SHORT_VIDEOS_DATA[0] | null>(null);
+
+  const videosSource = (productVideos && productVideos.length > 0)
+    ? productVideos.filter(v => v.active !== false)
+    : SHORT_VIDEOS_DATA;
+
+  const [activeVideo, setActiveVideo] = useState<ProductVideoItem | null>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -117,7 +137,7 @@ export default function StoreProductVideos({
   }, [selectedCategory]);
 
   // Filter video data based on active category slug
-  const filteredVideos = SHORT_VIDEOS_DATA.filter(vid => {
+  const filteredVideos = videosSource.filter(vid => {
     if (activeTab === 'all') return true;
     return vid.category === activeTab;
   });
@@ -217,7 +237,7 @@ export default function StoreProductVideos({
       [videoId]: !isAlreadyLiked
     }));
 
-    const baseLikes = SHORT_VIDEOS_DATA.find(v => v.id === videoId)?.likes || 0;
+    const baseLikes = videosSource.find(v => v.id === videoId)?.likes || 0;
     setLikeCounts(prev => ({
       ...prev,
       [videoId]: isAlreadyLiked ? (prev[videoId] || baseLikes) - 1 : (prev[videoId] || baseLikes) + 1
@@ -238,9 +258,16 @@ export default function StoreProductVideos({
 
   // Find product linked to video
   const getProductForVideo = (videoId: string) => {
-    const video = SHORT_VIDEOS_DATA.find(v => v.id === videoId);
+    const video = videosSource.find(v => v.id === videoId);
     if (!video) return null;
-    // Attempt match via category or generic product mapping
+    
+    // Check direct productId mapping first
+    if (video.productId) {
+      const directMatch = products.find(p => p._id === video.productId);
+      if (directMatch) return directMatch;
+    }
+
+    // Attempt fallback match via category or generic product mapping
     const matched = products.find(p => p.category_id === categories.find(c => c.slug === video.category)?._id) 
       || products[0];
     return matched;
