@@ -223,21 +223,28 @@ function CheckoutContent() {
   };
 
   // Step Validation Helpers
+  const validateAddresses = () => {
+    if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
+      return 'Please fill in all required shipping address fields.';
+    }
+    if (!sameAsShipping) {
+      if (!billingData.name || !billingData.street || !billingData.city || !billingData.state || !billingData.postcode) {
+        return 'Please fill in all required billing address fields.';
+      }
+    }
+    return null;
+  };
+
   const goToStep2 = () => {
     setError(null);
     if (cartItems.length === 0) {
       setError('Your cart is empty. Add products before proceeding.');
       return;
     }
-    if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
-      setError('Please fill in all required shipping address fields.');
+    const addressError = validateAddresses();
+    if (addressError) {
+      setError(addressError);
       return;
-    }
-    if (!sameAsShipping) {
-      if (!billingData.name || !billingData.street || !billingData.city || !billingData.state || !billingData.postcode) {
-        setError('Please fill in all required billing address fields.');
-        return;
-      }
     }
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -252,8 +259,9 @@ function CheckoutContent() {
       return;
     }
 
-    if (!formData.name || !formData.email || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.postcode) {
-      setError('Please fill in all shipping fields.');
+    const addressError = validateAddresses();
+    if (addressError) {
+      setError(addressError);
       setStep(1);
       return;
     }
@@ -801,6 +809,47 @@ function CheckoutContent() {
                         placeholder="State"
                         className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
                       />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="bpostcode" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">ZIP/Postcode *</label>
+                      <input
+                        type="text"
+                        id="bpostcode"
+                        name="postcode"
+                        value={billingData.postcode}
+                        onChange={handleBillingInputChange}
+                        placeholder="ZIP/Postcode"
+                        className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label htmlFor="bcountry" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Country *</label>
+                      {settings?.taxes?.countriesConfig && settings.taxes.countriesConfig.length > 0 ? (
+                        <select
+                          id="bcountry"
+                          name="country"
+                          value={billingData.country}
+                          onChange={handleBillingInputChange}
+                          className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900 cursor-pointer"
+                        >
+                          <option value="">Select Country</option>
+                          {settings.taxes.countriesConfig.map((c: any) => (
+                            <option key={c.name} value={c.name}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          id="bcountry"
+                          name="country"
+                          value={billingData.country}
+                          onChange={handleBillingInputChange}
+                          placeholder="e.g. India"
+                          className="border border-[#e2e2e3] rounded-lg p-2.5 text-xs bg-slate-50 focus:bg-white outline-none focus:border-[#ff6b00] text-slate-900"
+                        />
+                      )}
                     </div>
                   </div>
                 )}
