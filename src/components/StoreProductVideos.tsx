@@ -493,9 +493,7 @@ export default function StoreProductVideos({
             {/* Modal Header Controls */}
             <div className="absolute top-4 left-4 right-4 z-[110] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-white">
-                  O
-                </div>
+                <img src="/icon.png" alt="Olinbuy" className="w-8 h-8 rounded-full object-contain bg-slate-800/80 p-0.5 border border-slate-700" />
                 <div>
                   <p className="text-xs font-black text-white">Olinbuy Shorts</p>
                   <p className="text-[9px] text-slate-300 uppercase tracking-widest font-semibold">{activeVideo.category}</p>

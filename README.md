@@ -5,7 +5,7 @@ Olinbuy is a modern, high-fidelity, and responsive e-commerce storefront built w
 ## 🚀 Key Features
 
 *   **Premium Visual Experience**: Rich UI styling using Tailwind CSS v4, smooth slide-in/fade animations, and clean, high-contrast layouts.
-*   **Dynamic YouTube Shorts & Reels Player**: Interactive vertical video modal (`StoreProductVideos.tsx`) supporting YouTube Shorts/Videos with auto Video ID parsing, responsive YouTube iFrame embeds (`getYouTubeId`), auto-thumbnail fallbacks, likes counter, and one-click add-to-cart for linked products.
+*   **Dynamic YouTube Shorts & Reels Player**: Interactive vertical video modal (`StoreProductVideos.tsx`) supporting YouTube Shorts/Videos with auto Video ID parsing, responsive YouTube iFrame embeds (`getYouTubeId`), tap/click play/pause toggle with iframe postMessage & paused play overlay, touch swipe-up/down gesture navigation, mouse wheel scroll navigation, continuous video looping, likes counter, and linked product display (`activeVideo.productId`) with 1-click add-to-cart.
 *   **Intuitive Product Catalog**: Features a hero promotions carousel, dynamic product variation selectors grouped by category (supporting visual circular color swatches and text chips), real-time search, category filtering strip, trust badges, and special wholesale deals.
 *   **Modular Cart State**: Client-side state managed via context hooks that persist cart items automatically in the browser's `localStorage`.
 *   **Standardized Checkout Cycle**: A multi-mode checkout page accepting recipient shipping details and offering immediate options for:

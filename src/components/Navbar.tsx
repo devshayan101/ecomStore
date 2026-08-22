@@ -71,17 +71,7 @@ export default function Navbar({ searchTerm, onSearchChange, onMenuClick }: Navb
           </button>
 
           <Link href="/" className="flex items-center gap-2 select-none group">
-            <div className="w-8 h-8 rounded-xl bg-[#CCFF00] text-black font-extrabold flex items-center justify-center text-sm shadow-[0_0_20px_rgba(204,255,0,0.4)] group-hover:scale-105 transition-transform">
-              OB
-            </div>
-            <div className="flex flex-col">
-              <span className="font-heading text-lg md:text-xl font-black tracking-tight leading-none text-white">
-                OLIN<span className="text-[#CCFF00]">BUY</span>
-              </span>
-              <span className="text-[9px] text-zinc-400 font-mono tracking-widest uppercase mt-0.5 flex items-center gap-1">
-                <Flame className="w-2.5 h-2.5 text-[#CCFF00]" /> DROP SYSTEM
-              </span>
-            </div>
+            <img src="/logo-dark-theme.png" alt="Olinbuy" className="h-8 sm:h-9 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]" />
           </Link>
         </div>
 

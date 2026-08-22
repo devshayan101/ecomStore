@@ -26,6 +26,11 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Olinbuy — Techwear & Streetwear Drops",
   description: "Next-gen streetwear, limited techwear drops, and lifestyle aesthetics.",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

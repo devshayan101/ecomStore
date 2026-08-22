@@ -100,17 +100,7 @@ export default function StoreNavbar({
           </button>
 
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group select-none">
-            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gradient-to-tr from-amber-500 to-orange-400 text-slate-950 font-black flex items-center justify-center text-base sm:text-lg tracking-tighter shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform">
-              O
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight leading-none">
-                Olin<span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">buy</span>
-              </span>
-              <span className="text-[8px] sm:text-[9px] font-mono tracking-widest text-slate-400 uppercase flex items-center gap-0.5 sm:gap-1 mt-0.5">
-                <Flame className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-amber-400" /> STORE
-              </span>
-            </div>
+            <img src="/logo-dark-theme.png" alt="Olinbuy" className="h-8 sm:h-9 md:h-10 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]" />
           </Link>
         </div>
 
