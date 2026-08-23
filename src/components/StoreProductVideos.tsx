@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Product, Category } from '@/lib/api';
 import { 
   Play, 
+  Pause,
   Volume2, 
   VolumeX, 
   Heart, 
@@ -112,6 +113,7 @@ export default function StoreProductVideos({
   const videosSource = (customVideos && customVideos.length > 0) ? customVideos : SHORT_VIDEOS_DATA;
 
   const [activeVideo, setActiveVideo] = useState<any | null>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -119,6 +121,7 @@ export default function StoreProductVideos({
   const [addedStatus, setAddedStatus] = useState<Record<string, boolean>>({});
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollShorts = (direction: 'left' | 'right') => {
@@ -133,6 +136,11 @@ export default function StoreProductVideos({
   useEffect(() => {
     setActiveTab(selectedCategory);
   }, [selectedCategory]);
+
+  // Reset play state on active video change
+  useEffect(() => {
+    setIsPlaying(true);
+  }, [activeVideo]);
 
   // Filter video data based on active category slug
   const filteredVideos = videosSource.filter(vid => {
@@ -165,6 +173,30 @@ export default function StoreProductVideos({
     }
   }, [isMuted, activeVideo]);
 
+  const togglePlayPause = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    const nextPlay = !isPlaying;
+    setIsPlaying(nextPlay);
+
+    if (videoRef.current) {
+      if (nextPlay) {
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      const cmd = nextPlay ? 'playVideo' : 'pauseVideo';
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: cmd, args: '' }),
+        '*'
+      );
+    }
+  };
+
   const playNextVideo = () => {
     if (!activeVideo) return;
     const currentIndex = filteredVideos.findIndex(v => v.id === activeVideo.id);
@@ -196,6 +228,9 @@ export default function StoreProductVideos({
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         playPrevVideo();
+      } else if (e.key === ' ' || e.key === 'k') {
+        e.preventDefault();
+        togglePlayPause();
       }
     };
 
@@ -203,9 +238,9 @@ export default function StoreProductVideos({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeVideo, filteredVideos]);
+  }, [activeVideo, filteredVideos, isPlaying]);
 
-  // Touch swipe navigation refs & handlers
+  // Touch swipe & wheel navigation handlers
   const touchStartY = useRef(0);
   
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -223,6 +258,16 @@ export default function StoreProductVideos({
     }
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    if (Math.abs(e.deltaY) > 30) {
+      if (e.deltaY > 0) {
+        playNextVideo();
+      } else {
+        playPrevVideo();
+      }
+    }
+  };
+
   // Like video handler
   const handleLike = (videoId: string, e?: React.MouseEvent) => {
     if (e) {
@@ -235,7 +280,7 @@ export default function StoreProductVideos({
       [videoId]: !isAlreadyLiked
     }));
 
-    const baseLikes = SHORT_VIDEOS_DATA.find(v => v.id === videoId)?.likes || 0;
+    const baseLikes = videosSource.find(v => v.id === videoId)?.likes || 0;
     setLikeCounts(prev => ({
       ...prev,
       [videoId]: isAlreadyLiked ? (prev[videoId] || baseLikes) - 1 : (prev[videoId] || baseLikes) + 1
@@ -255,13 +300,41 @@ export default function StoreProductVideos({
   };
 
   // Find product linked to video
-  const getProductForVideo = (videoId: string) => {
-    const video = SHORT_VIDEOS_DATA.find(v => v.id === videoId);
-    if (!video) return null;
-    // Attempt match via category or generic product mapping
-    const matched = products.find(p => p.category_id === categories.find(c => c.slug === video.category)?._id) 
-      || products[0];
-    return matched;
+  const getProductForVideo = (videoInput: string | any) => {
+    if (!videoInput) return null;
+
+    let videoObj: any = null;
+    if (typeof videoInput === 'object') {
+      videoObj = videoInput;
+    } else {
+      videoObj = videosSource.find(v => v.id === videoInput) || { id: videoInput };
+    }
+
+    if (!videoObj) return null;
+
+    // 1. Direct match by videoObj.productId if specified
+    if (videoObj.productId) {
+      const prod = products.find(p => p._id === videoObj.productId || String(p._id) === String(videoObj.productId));
+      if (prod) return prod;
+    }
+
+    // 2. Direct match by videoObj.id if videoObj.id equals product _id
+    if (videoObj.id) {
+      const directProd = products.find(p => p._id === videoObj.id || String(p._id) === String(videoObj.id));
+      if (directProd) return directProd;
+    }
+
+    // 3. Fallback match via category
+    if (videoObj.category) {
+      const catObj = categories.find(c => c.slug === videoObj.category || c._id === videoObj.category);
+      if (catObj) {
+        const catMatched = products.find(p => p.category_id === catObj._id || p.category_id === catObj.slug);
+        if (catMatched) return catMatched;
+      }
+    }
+
+    // 4. Default fallback to first product if available
+    return products[0] || null;
   };
 
   return (
@@ -413,6 +486,7 @@ export default function StoreProductVideos({
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-lg p-2 sm:p-4 select-none"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onWheel={handleWheel}
         >
           <div className="relative w-full max-w-md aspect-[9/16] max-h-[92vh] bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
             
@@ -436,15 +510,19 @@ export default function StoreProductVideos({
             </div>
 
             {/* Main Video Element */}
-            <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
+            <div 
+              onClick={togglePlayPause}
+              className="relative flex-1 bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+            >
               {(() => {
                 const ytId = getYouTubeId(activeVideo.videoUrl, activeVideo.youtubeVideoId);
                 if (ytId) {
                   return (
                     <iframe
+                      ref={iframeRef}
                       src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&loop=1&playlist=${ytId}&enablejsapi=1`}
                       title={activeVideo.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                       allow="autoplay; encrypted-media; picture-in-picture"
                     />
                   );
@@ -463,14 +541,26 @@ export default function StoreProductVideos({
               })()}
 
               {/* Central play indicator overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70 pointer-events-none"></div>
+
+              {/* Paused Play Icon Overlay */}
+              {!isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/40 pointer-events-none">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full border border-white/30 flex items-center justify-center text-white scale-110 shadow-2xl">
+                    <Play className="w-8 h-8 fill-current ml-1 text-white" />
+                  </div>
+                </div>
+              )}
 
               {/* Sidebar Action Buttons (TikTok Style) */}
               <div className="absolute bottom-24 right-4 z-[110] flex flex-col items-center gap-5">
                 {/* Like Button */}
                 <div className="flex flex-col items-center gap-1">
                   <button
-                    onClick={() => handleLike(activeVideo.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLike(activeVideo.id, e);
+                    }}
                     className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md border transition-all duration-200 cursor-pointer ${
                       likedVideos[activeVideo.id] 
                         ? 'bg-red-500 border-red-500 text-white' 
@@ -487,7 +577,10 @@ export default function StoreProductVideos({
                 {/* Mute Button */}
                 <div className="flex flex-col items-center gap-1">
                   <button
-                    onClick={() => setIsMuted(!isMuted)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMuted(!isMuted);
+                    }}
                     className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-900/60 backdrop-blur-md border border-slate-800 text-white hover:bg-slate-800 cursor-pointer transition-all"
                   >
                     {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
@@ -507,13 +600,13 @@ export default function StoreProductVideos({
               </div>
 
               {/* Bottom Details Card & Cart actions */}
-              <div className="absolute bottom-4 left-4 right-4 z-[110]">
+              <div className="absolute bottom-4 left-4 right-4 z-[110]" onClick={(e) => e.stopPropagation()}>
                 <div className="bg-slate-950/80 backdrop-blur-lg p-3 rounded-2xl border border-slate-800/80">
                   <p className="text-sm font-bold text-white line-clamp-1">{activeVideo.title}</p>
                   
                   {/* Matched Product link & details */}
                   {(() => {
-                    const prod = getProductForVideo(activeVideo.id);
+                    const prod = getProductForVideo(activeVideo);
                     if (!prod) return null;
                     const price = prod.variants?.[0]?.price || 0;
                     const isAdded = !!addedStatus[prod._id];
