@@ -357,6 +357,9 @@ export async function fetchWishlist(token: string): Promise<{ productIds: string
     headers: { 'Authorization': `Bearer ${token}` }
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      return { productIds: [], products: [] };
+    }
     throw new Error('Failed to fetch wishlist');
   }
   return res.json();

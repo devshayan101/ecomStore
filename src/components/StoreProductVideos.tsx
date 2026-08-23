@@ -78,42 +78,40 @@ const SHORT_VIDEOS_DATA = [
   }
 ];
 
-export interface ProductVideoItem {
-  id: string;
-  title: string;
-  category: string;
-  videoUrl: string;
-  thumbnail: string;
-  views?: string;
-  likes?: number;
-  duration?: string;
-  productId?: string;
-  active?: boolean;
+export function getYouTubeId(url?: string, existingId?: string): string {
+  if (existingId && existingId.length === 11) return existingId;
+  if (!url) return '';
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+  if (shortsMatch) return shortsMatch[1];
+  const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) return watchMatch[1];
+  const shareMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (shareMatch) return shareMatch[1];
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url.trim())) return url.trim();
+  return '';
 }
 
 interface StoreProductVideosProps {
   products: Product[];
   categories: Category[];
-  productVideos?: ProductVideoItem[];
   selectedCategory?: string; // category slug from homepage state
   currencySymbol?: string;
+  customVideos?: any[];
 }
 
 export default function StoreProductVideos({ 
   products, 
   categories, 
-  productVideos,
   selectedCategory = 'all',
-  currencySymbol = '₹' 
+  currencySymbol = '₹',
+  customVideos
 }: StoreProductVideosProps) {
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('all');
 
-  const videosSource = (productVideos && productVideos.length > 0)
-    ? productVideos.filter(v => v.active !== false)
-    : SHORT_VIDEOS_DATA;
+  const videosSource = (customVideos && customVideos.length > 0) ? customVideos : SHORT_VIDEOS_DATA;
 
-  const [activeVideo, setActiveVideo] = useState<ProductVideoItem | null>(null);
+  const [activeVideo, setActiveVideo] = useState<any | null>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -237,7 +235,7 @@ export default function StoreProductVideos({
       [videoId]: !isAlreadyLiked
     }));
 
-    const baseLikes = videosSource.find(v => v.id === videoId)?.likes || 0;
+    const baseLikes = SHORT_VIDEOS_DATA.find(v => v.id === videoId)?.likes || 0;
     setLikeCounts(prev => ({
       ...prev,
       [videoId]: isAlreadyLiked ? (prev[videoId] || baseLikes) - 1 : (prev[videoId] || baseLikes) + 1
@@ -258,16 +256,9 @@ export default function StoreProductVideos({
 
   // Find product linked to video
   const getProductForVideo = (videoId: string) => {
-    const video = videosSource.find(v => v.id === videoId);
+    const video = SHORT_VIDEOS_DATA.find(v => v.id === videoId);
     if (!video) return null;
-    
-    // Check direct productId mapping first
-    if (video.productId) {
-      const directMatch = products.find(p => p._id === video.productId);
-      if (directMatch) return directMatch;
-    }
-
-    // Attempt fallback match via category or generic product mapping
+    // Attempt match via category or generic product mapping
     const matched = products.find(p => p.category_id === categories.find(c => c.slug === video.category)?._id) 
       || products[0];
     return matched;
@@ -354,6 +345,8 @@ export default function StoreProductVideos({
             >
               {filteredVideos.map(vid => {
                 const matchedProduct = getProductForVideo(vid.id);
+                const ytId = getYouTubeId(vid.videoUrl, vid.youtubeVideoId);
+                const thumbUrl = vid.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
 
                 return (
                   <div 
@@ -366,7 +359,7 @@ export default function StoreProductVideos({
                   >
                     {/* Thumbnail Image */}
                     <img
-                      src={vid.thumbnail}
+                      src={thumbUrl}
                       alt={vid.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out opacity-80"
                     />
@@ -444,15 +437,30 @@ export default function StoreProductVideos({
 
             {/* Main Video Element */}
             <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
-              <video
-                ref={videoRef}
-                src={activeVideo.videoUrl}
-                autoPlay
-                loop
-                muted={isMuted}
-                playsInline
-                className="w-full h-full object-cover"
-              />
+              {(() => {
+                const ytId = getYouTubeId(activeVideo.videoUrl, activeVideo.youtubeVideoId);
+                if (ytId) {
+                  return (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&loop=1&playlist=${ytId}&enablejsapi=1`}
+                      title={activeVideo.title}
+                      className="w-full h-full object-cover"
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                    />
+                  );
+                }
+                return (
+                  <video
+                    ref={videoRef}
+                    src={activeVideo.videoUrl}
+                    autoPlay
+                    loop
+                    muted={isMuted}
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                );
+              })()}
 
               {/* Central play indicator overlay */}
               <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70"></div>

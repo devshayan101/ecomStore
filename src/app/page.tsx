@@ -36,6 +36,7 @@ function HomeContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [promotionCards, setPromotionCards] = useState<any[]>([]);
+  const [productVideos, setProductVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currencySymbol, setCurrencySymbol] = useState('₹');
 
@@ -46,8 +47,6 @@ function HomeContent() {
   useEffect(() => {
     setSearchTerm(searchQ);
   }, [searchQ]);
-
-  const [productVideos, setProductVideos] = useState<any[]>([]);
 
   // Fetch settings
   useEffect(() => {
@@ -158,9 +157,9 @@ function HomeContent() {
         <StoreProductVideos
           products={products}
           categories={categories}
-          productVideos={productVideos}
           selectedCategory={categoryQ}
           currencySymbol={currencySymbol}
+          customVideos={productVideos}
         />
 
         {/* Full Products Section Grid */}
