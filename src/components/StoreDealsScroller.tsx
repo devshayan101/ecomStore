@@ -51,7 +51,7 @@ export default function StoreDealsScroller({ products, onSelectProduct, currency
   const padZero = (num: number) => String(num).padStart(2, '0');
 
   return (
-    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 mb-3 sm:mb-12 relative group/section">
+    <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 mt-6 sm:mt-10 lg:mt-12 mb-6 sm:mb-12 relative group/section">
       <div className="bg-white p-3 pt-3 pb-2 sm:p-8 rounded-xl sm:rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] relative overflow-hidden">
         {/* Decorative Top Accent */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"></div>

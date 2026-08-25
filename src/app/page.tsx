@@ -11,7 +11,6 @@ import {
 import StoreNavbar from '@/components/StoreNavbar';
 import StoreHero from '@/components/StoreHero';
 import StoreFeatureGrid from '@/components/StoreFeatureGrid';
-import StoreValueProps from '@/components/StoreValueProps';
 import StoreDealsScroller from '@/components/StoreDealsScroller';
 import StoreTrendingScroller from '@/components/StoreTrendingScroller';
 import StoreProductVideos from '@/components/StoreProductVideos';
@@ -143,9 +142,6 @@ function HomeContent() {
           promotionCards={promotionCards}
           onSelectCategory={handleSelectCategory}
         />
-
-        {/* Value Props Bar */}
-        <StoreValueProps />
 
         {/* Today's Deals Scroller */}
         <StoreDealsScroller products={products} currencySymbol={currencySymbol} />

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
+import StoreNavbar from '@/components/StoreNavbar';
 import { 
   Truck, 
   RotateCcw, 
@@ -53,57 +53,55 @@ function PolicyPageContent() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-[#1a1a2e] flex flex-col font-sans">
-      <Navbar searchTerm="" onSearchChange={() => {}} onMenuClick={() => {}} />
+      {/* OFFICIAL STOREFRONT NAVBAR */}
+      <StoreNavbar 
+        categories={[]} 
+        searchTerm="" 
+        onSearchChange={() => {}} 
+        onSelectCategory={() => {}} 
+        selectedCategory="all" 
+      />
 
-      {/* HEADER / HERO BAR */}
-      <header className="bg-gradient-to-r from-[#0a1628] via-[#0f2444] to-[#1a3a6b] px-4 md:px-8 py-6 flex items-center justify-between shadow-lg border-b border-[#c9a84c]/20 sticky top-0 z-50">
-        <Link href="/" className="flex flex-col gap-0.5">
-          <span className="font-heading text-2xl font-bold text-white tracking-wide">
-            Olin<em className="text-[#c9a84c] not-italic">buy</em>
-          </span>
-          <span className="text-[9px] text-[#c9a84c]/85 tracking-[3px] uppercase font-semibold">
-            India's Best Store
-          </span>
-        </Link>
-        <Link 
-          href="/" 
-          className="flex items-center gap-1.5 bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 border border-[#c9a84c]/30 text-[#e8d5a3] hover:text-[#fde68a] px-4 py-2 rounded-lg text-xs font-bold transition-all"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Shop
-        </Link>
-      </header>
+      {/* STICKY POLICY TAB NAV */}
+      <div className="bg-[#0f172a] border-b border-slate-800 sticky top-0 z-40 shadow-lg">
+        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between overflow-x-auto no-scrollbar scroll-smooth">
+          <div className="flex items-center">
+            {(
+              [
+                { id: 'shipping', label: 'Shipping', icon: Truck },
+                { id: 'return', label: 'Return & Refund', icon: RotateCcw },
+                { id: 'payment', label: 'Payment', icon: CreditCard },
+                { id: 'wholesale', label: 'Wholesale', icon: Package },
+                { id: 'privacy', label: 'Privacy', icon: Lock },
+                { id: 'terms', label: 'Terms', icon: FileText },
+                { id: 'faq', label: 'FAQ', icon: HelpCircle }
+              ] as const
+            ).map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-3.5 text-xs font-bold border-b-2 whitespace-nowrap transition-all cursor-pointer ${
+                    isActive
+                      ? 'border-[#ff6600] text-[#ff6600] bg-white/5'
+                      : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-      {/* TAB NAV */}
-      <div className="bg-white border-b border-slate-200 sticky top-[77px] z-40 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 flex overflow-x-auto no-scrollbar scroll-smooth">
-          {(
-            [
-              { id: 'shipping', label: 'Shipping', icon: Truck, color: 'text-slate-600' },
-              { id: 'return', label: 'Return & Refund', icon: RotateCcw, color: 'text-slate-600' },
-              { id: 'payment', label: 'Payment', icon: CreditCard, color: 'text-slate-600' },
-              { id: 'wholesale', label: 'Wholesale', icon: Package, color: 'text-amber-800' },
-              { id: 'privacy', label: 'Privacy', icon: Lock, color: 'text-slate-600' },
-              { id: 'terms', label: 'Terms', icon: FileText, color: 'text-slate-600' },
-              { id: 'faq', label: 'FAQ', icon: HelpCircle, color: 'text-slate-600' }
-            ] as const
-          ).map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-2 px-5 py-4 text-xs font-bold border-b-3 whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? 'border-[#c9a84c] text-[#0f2444] bg-[#f8faff]/50'
-                    : 'border-transparent text-slate-500 hover:text-[#0f2444] hover:bg-slate-50/50'
-                } ${tab.id === 'wholesale' ? 'text-amber-700' : ''}`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+          <Link 
+            href="/" 
+            className="hidden sm:inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer my-2"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-amber-400" /> Back to Shop
+          </Link>
         </div>
       </div>
 
@@ -423,6 +421,58 @@ function PolicyPageContent() {
               </div>
             </div>
 
+            {/* COD 20% Advance Cancellation & Return Charges */}
+            <div className="bg-amber-50/70 rounded-xl p-6 border-2 border-amber-200/80 shadow-sm space-y-4">
+              <div className="flex items-center gap-2 text-lg font-heading font-bold text-amber-900 border-b border-amber-200 pb-3">
+                <span className="p-1.5 rounded-lg bg-amber-100 text-amber-800"><AlertTriangle className="w-5 h-5" /></span>
+                Cash on Delivery (COD) — 20% Advance & Cancellation/Return Charges
+              </div>
+              <p className="text-xs text-amber-950 leading-relaxed">
+                To confirm a Cash on Delivery order, an <strong>advance payment of 20% of the total order value</strong> must be paid online at booking. The remaining amount is payable in cash at the time of delivery.
+              </p>
+              <div className="p-4 rounded-lg bg-amber-100/80 border-l-4 border-amber-500 text-xs text-amber-950 space-y-2">
+                <p className="font-bold">If the order is later cancelled or returned:</p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>If your 20% advance is <strong>more than ₹100</strong>: a flat <strong>₹100</strong> cancellation/return charge is deducted, and the remaining advance balance is refunded to you.</li>
+                  <li>If your 20% advance is <strong>₹100 or less</strong>: the entire 20% advance is retained as the cancellation/return charge (₹0 refund).</li>
+                </ul>
+              </div>
+              
+              {/* Example Table */}
+              <div className="overflow-x-auto mt-3">
+                <table className="w-full text-left text-xs border-collapse bg-white rounded-lg overflow-hidden border border-amber-200">
+                  <thead>
+                    <tr className="bg-[#0f2444] text-white">
+                      <th className="p-2.5 font-bold">Order Value</th>
+                      <th className="p-2.5 font-bold">20% Advance Paid</th>
+                      <th className="p-2.5 font-bold">Cancellation / Return Charge</th>
+                      <th className="p-2.5 font-bold">Refunded Back</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-amber-100 text-slate-700">
+                    <tr>
+                      <td className="p-2.5 font-semibold">₹2,000</td>
+                      <td className="p-2.5">₹400</td>
+                      <td className="p-2.5 text-amber-800 font-semibold">₹100 (flat)</td>
+                      <td className="p-2.5 text-emerald-700 font-bold">₹300</td>
+                    </tr>
+                    <tr className="bg-amber-50/40">
+                      <td className="p-2.5 font-semibold">₹800</td>
+                      <td className="p-2.5">₹160</td>
+                      <td className="p-2.5 text-amber-800 font-semibold">₹100 (flat)</td>
+                      <td className="p-2.5 text-emerald-700 font-bold">₹60</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2.5 font-semibold">₹400</td>
+                      <td className="p-2.5">₹80</td>
+                      <td className="p-2.5 text-rose-700 font-semibold">₹80 (full advance)</td>
+                      <td className="p-2.5 text-rose-700 font-bold">₹0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Cancellation Policy */}
               <div className="bg-white rounded-xl p-6 border border-slate-105 shadow-sm hover:shadow-md transition-shadow">
@@ -433,27 +483,19 @@ function PolicyPageContent() {
                 <ul className="space-y-3.5 text-xs text-slate-600">
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Cancellation allowed <strong>before dispatch only</strong></span>
+                    <span>Order can be cancelled anytime <strong>before it is shipped</strong></span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Can cancel only <strong>after 3 hours</strong> of placing order</span>
+                    <span>Free cancellation before shipping (COD 20% advance rules apply if advance collected)</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <X className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                    <span>Once tracking updated or dispatched — <strong>cannot cancel</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-slate-400">
-                    <span className="shrink-0 mt-0.5">›</span>
-                    <span>If shipped, cancellation cannot be guaranteed</span>
+                    <span>Once dispatched or tracking generated — cancellation subject to COD charges</span>
                   </li>
                   <li className="flex items-start gap-2.5 text-amber-700">
                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>If cancelled but courier delivers — <strong>do NOT accept</strong> the package</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-slate-400">
-                    <span className="shrink-0 mt-0.5">›</span>
-                    <span>Auto-refund if shipment returned due to non-delivery</span>
+                    <span>If cancelled after dispatch — <strong>do NOT accept</strong> package on delivery</span>
                   </li>
                 </ul>
               </div>
@@ -462,31 +504,27 @@ function PolicyPageContent() {
               <div className="bg-white rounded-xl p-6 border border-slate-105 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-2 text-lg font-heading font-bold text-[#0f2444] border-b-2 border-slate-100 pb-3 mb-4">
                   <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600"><CreditCard className="w-5 h-5" /></span>
-                  Refund Details
+                  Refund Details & Timelines
                 </div>
                 <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-                  Approved refunds processed within <strong>5–7 business days</strong> after product received & inspected.
+                  Approved refunds (net of COD charges) are processed within <strong>5–7 business days</strong> to original payment method, bank account, or wallet.
                 </p>
                 <ul className="space-y-3.5 text-xs text-slate-600">
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>COD orders</strong> — Refund via UPI or Bank Transfer</span>
+                    <span><strong>COD 20% Advance Refund</strong> — Refunded net of ₹100 or full advance charge</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>UPI/Online</strong> — Refund to original payment source</span>
+                    <span><strong>Prepaid/Online</strong> — Refunded directly to original payment source</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>Partial COD</strong> — 10% advance refunded to UPI/bank</span>
+                    <span><strong>Exchanges</strong> — Available for size/variant within 3-day return window</span>
                   </li>
-                  <li className="flex items-start gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span>Exchange available if preferred over refund</span>
-                  </li>
-                  <li className="flex items-start gap-2.5 text-slate-400 border-t border-slate-50 pt-2">
+                  <li className="flex items-start gap-2.5 text-slate-500 border-t border-slate-50 pt-2">
                     <span className="shrink-0 mt-0.5">›</span>
-                    <span>Shipping charges (₹60–₹100) non-refundable unless Olinbuy's error</span>
+                    <span>Reversal: Earned cashback/referrals are reversed if order is returned</span>
                   </li>
                 </ul>
               </div>
@@ -542,11 +580,7 @@ function PolicyPageContent() {
                 <ul className="space-y-3.5 text-xs text-slate-600">
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>Cash on Delivery (COD)</strong> — pan-India, up to ₹10,000</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>Partial COD</strong> — 10% advance + 90% on delivery</span>
+                    <span><strong>Cash on Delivery (COD)</strong> — 20% advance booking online + 80% cash on delivery</span>
                   </li>
                   <li className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
