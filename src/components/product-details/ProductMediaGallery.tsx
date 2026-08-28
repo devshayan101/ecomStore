@@ -42,7 +42,7 @@ export default function ProductMediaGallery({
       {/* Main Image Box */}
       <div
         onClick={() => setIsLightboxOpen(true)}
-        className="relative bg-[#f5f6f7] rounded-xl overflow-hidden aspect-[4/3] group border border-[#e2e2e3] cursor-zoom-in shadow-sm select-none"
+        className="relative bg-[#f5f6f7] rounded-xl overflow-hidden aspect-square group border border-[#e2e2e3] cursor-zoom-in shadow-sm select-none"
       >
         <img
           src={currentActive}
