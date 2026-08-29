@@ -302,7 +302,7 @@ export default function ProductDetailsModal({
 
             <div className="text-xs text-slate-500 leading-relaxed space-y-2">
               <p className="font-extrabold text-slate-700 uppercase tracking-widest text-[9px]">Description</p>
-              <p className="bg-white/80 p-3 rounded-lg border border-slate-200/50">{product.description || 'No description available for this product.'}</p>
+              <div className="bg-white/80 p-3 rounded-lg border border-slate-200/50 whitespace-pre-line text-slate-700">{product.description || 'No description available for this product.'}</div>
             </div>
 
             <button

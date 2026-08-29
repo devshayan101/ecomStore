@@ -330,15 +330,15 @@ export default function ProductInfoSection({
           {product.about_this_item && product.about_this_item.length > 0 ? (
             <ul className="list-disc pl-5 space-y-1.5 text-sm text-slate-700">
               {product.about_this_item.map((bullet, idx) => (
-                <li key={idx}>
+                <li key={idx} className="whitespace-pre-line">
                   {bullet}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-600 leading-relaxed italic">
+            <div className="text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">
               {product.description || "No description details available."}
-            </p>
+            </div>
           )}
         </div>
       )}

@@ -103,10 +103,10 @@ export default function ProductTabbedInfo({ product, currencySymbol = '₹' }: P
         </button>
         {openSections.description && (
           <div className="px-6 pb-6 pt-2 text-sm text-slate-700 leading-relaxed space-y-3 border-t border-slate-100 animate-in fade-in duration-200">
-            <p>
+            <div className="whitespace-pre-line">
               {product.description ||
                 'Experience next-level performance and design with OlinBuy. Built with premium materials to deliver maximum comfort, speed, and durability for daily use.'}
-            </p>
+            </div>
           </div>
         )}
       </div>
