@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth dark">
+    <html lang="en" className="scroll-smooth dark" data-scroll-behavior="smooth">
       <body className={`${outfit.variable} ${jetbrainsMono.variable} ${jakarta.variable} font-sans antialiased text-white bg-[#09090B] selection:bg-[#CCFF00] selection:text-black`}>
         <SessionProvider>
           <WishlistProvider>

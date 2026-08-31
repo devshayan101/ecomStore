@@ -226,11 +226,17 @@ export interface StorefrontSettings {
 }
 
 export async function fetchStorefrontSettings(): Promise<StorefrontSettings> {
-  const res = await fetch(`${API_BASE}/settings`, { cache: 'no-store' });
-  if (!res.ok) {
-    throw new Error('Failed to fetch storefront settings');
+  try {
+    const res = await fetch(`${API_BASE}/settings`, { cache: 'no-store' });
+    if (!res.ok) {
+      console.warn('Failed to fetch storefront settings, status:', res.status);
+      return {};
+    }
+    return await res.json();
+  } catch (error) {
+    console.warn('Could not fetch storefront settings:', error);
+    return {};
   }
-  return res.json();
 }
 
 export interface ShippingRateOption {
@@ -250,10 +256,16 @@ export async function fetchShippingRates(payload: {
   totalWeight: number;
   subtotal: number;
 }): Promise<ShippingRateOption[]> {
-  const res = await fetch(`${API_BASE}/shipping-rates`, {
+  const res = await fetch(`${API_BASE}/shipping/rates`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ country: payload.destCountry, state: payload.destState, subtotal: payload.subtotal }),
+    body: JSON.stringify({
+      destCountry: payload.destCountry,
+      destState: payload.destState,
+      destPostcode: payload.destPostcode,
+      totalWeight: payload.totalWeight,
+      subtotal: payload.subtotal,
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
