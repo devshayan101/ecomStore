@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Star, ShoppingCart, Truck, RotateCcw, Check, Sparkles, Heart } from 'lucide-react';
+import { Star, ShoppingCart, Check, Sparkles, Heart } from 'lucide-react';
 import { Product, Variant } from '@/lib/api';
 import { useWishlist } from '@/lib/WishlistContext';
 
@@ -179,12 +179,6 @@ export default function ProductInfoSection({
           </div>
         )}
 
-        {isCombinationAvailable && (
-          <p className="text-xs text-slate-500">
-            Prices include VAT. Financing available starting at {currencySymbol}{Math.round(price * 0.12)}/mo.
-          </p>
-        )}
-
         {/* Action Buttons */}
         <div className="flex flex-col gap-2.5 pt-1">
           {!isCombinationAvailable && (
@@ -221,18 +215,6 @@ export default function ProductInfoSection({
             <Heart className={`w-4 h-4 ${isInWishlist(product._id) ? 'fill-rose-500 text-rose-500' : 'text-slate-500'}`} />
             {isInWishlist(product._id) ? 'Saved in Wishlist' : 'Add to Wishlist'}
           </button>
-        </div>
-
-        {/* Shipping & Returns perks grid */}
-        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-[#e2e2e3]">
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#1a1c1d]">
-            <Truck className="w-4 h-4 text-[#00686f]" />
-            <span>Free Shipping</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#1a1c1d]">
-            <RotateCcw className="w-4 h-4 text-[#00686f]" />
-            <span>Free Returns</span>
-          </div>
         </div>
       </div>
 
